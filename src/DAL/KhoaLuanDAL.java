@@ -18,14 +18,15 @@ import java.util.logging.Logger;
  * @author DLT
  */
 public class KhoaLuanDAL {
-    MyConnectUnit connect = new MyConnectUnit("C:/Users/DLT/Documents/NetBeansProjects/KhoaLuan/src/Database/database_khoaluan.db");
-    
+    //MyConnectUnit connect = new MyConnectUnit("C:/Users/DLT/Documents/NetBeansProjects/KhoaLuan/src/Database/database_khoaluan.db");
+    MyConnectUnit connect = new MyConnectUnit("C:/Users/DLT/Documents/NetBeansProjects/KhoaLuan/src/Database/sample.db");
     public ArrayList<KhoaLuanDTO> getData(ResultSet rs) throws SQLException, Exception
     {
         ArrayList<KhoaLuanDTO> dataList = new ArrayList<KhoaLuanDTO>();
         while(rs.next())
         {
             KhoaLuanDTO data= new KhoaLuanDTO();
+            data.setIndex(rs.getInt("index"));
             data.setScore(rs.getFloat("Score"));
             data.setPro(rs.getFloat("Pro"));
             dataList.add(data);

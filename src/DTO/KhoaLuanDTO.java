@@ -10,6 +10,7 @@ package DTO;
  * @author DLT
  */
 public class KhoaLuanDTO {
+    private int index;
     private float score;
     private float pro;
     private float topk;
@@ -53,5 +54,19 @@ public class KhoaLuanDTO {
      */
     public void setTopk(float topk) {
         this.topk = topk;
+    }
+
+    /**
+     * @return the index
+     */
+    public int getIndex() {
+        return index;
+    }
+
+    /**
+     * @param index the index to set
+     */
+    public void setIndex(int index) {
+        this.index = index;
     }
 }

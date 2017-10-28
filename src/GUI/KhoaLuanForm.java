@@ -25,11 +25,11 @@ public class KhoaLuanForm extends javax.swing.JFrame {
      */
     public KhoaLuanForm() throws Exception {
         initComponents();
-        GetAllData();
+        dataList = GetSampleData(dal.getAllData());
+        ShowTable(dataList);
     }
     
-    public void GetAllData () throws Exception{
-        dataList = dal.getAllData();
+    public void ShowTable (ArrayList<KhoaLuanDTO> dataList) throws Exception{
         Vector columns = new Vector();
         columns.add("Tuple");
         columns.add("Score");
@@ -37,12 +37,10 @@ public class KhoaLuanForm extends javax.swing.JFrame {
         columns.add("Top-k probability");
         
         Vector vector = new Vector();
-        int i = 0;
         for(KhoaLuanDTO data : dataList)
         {
-            i++;
             Vector row = new Vector();            
-            row.add(i);
+            row.add(data.getIndex());
             row.add(data.getScore());
             row.add(data.getPro());
             vector.add(row);
@@ -62,6 +60,7 @@ public class KhoaLuanForm extends javax.swing.JFrame {
         btnRun = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        jTextField1 = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Tìm xác suất top-k tốt nhất");
@@ -90,17 +89,21 @@ public class KhoaLuanForm extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(15, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnRun, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 417, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(btnRun, javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 417, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(36, 36, 36)
+                .addContainerGap()
+                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(5, 5, 5)
                 .addComponent(btnRun)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -111,9 +114,87 @@ public class KhoaLuanForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnRunMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnRunMouseClicked
-        // TODO add your handling code here:
+        ArrayList<KhoaLuanDTO> Sequence = new ArrayList<KhoaLuanDTO>();
+        Sequence.add(dataList.get(0)); 
+        Sequence.add(dataList.get(1)); 
+        Sequence.add(dataList.get(2)); 
+        float result = GetTopkPro(Sequence, 2, 3);
+        jTextField1.setText(String.valueOf(result));
     }//GEN-LAST:event_btnRunMouseClicked
 
+    private float GetprokTuple(ArrayList<KhoaLuanDTO> Sequence, int j) //pro of k tuples appearing in the sequence
+    {
+        float prokTuple = 1; //pro of k tuple in the sequence
+        int i = Sequence.size();
+        float pro = Sequence.get(i-1).getPro(); //pro of tuple
+        ArrayList<KhoaLuanDTO> tempSequence = new ArrayList<KhoaLuanDTO>();
+        if (i == 1 && j != 0)
+        {
+            return pro;
+        }
+        if (i == 0 && j == 0)
+        {
+            return 1;
+        }
+        if (i == 0)
+        {
+            return 0;
+        }
+        if (i > 0 && j == 0)
+        {
+            float prok = 0.0f; //pro of k not appearing in the Sequence
+            for (int k = 0; k < i ; k++) //k=0 same j=1
+            {
+                prok = (1 - Sequence.get(k).getPro()); 
+                prokTuple *= prok;
+            }
+            return prokTuple;
+        }
+        for (int index = 0; index < i - 1; index++)
+        {
+            tempSequence.add(Sequence.get(index));
+        }       
+        prokTuple = GetprokTuple(tempSequence, j - 1) * pro + GetprokTuple(tempSequence, j) * (1 - pro);
+        return prokTuple;
+    }
+    
+    private float GetProTuple (ArrayList<KhoaLuanDTO> Sequence, int j) //Get pro of tuple at position j
+    {
+        int i = Sequence.size();
+        float pro = Sequence.get(i-1).getPro();
+        ArrayList<KhoaLuanDTO> tempSequence = new ArrayList<KhoaLuanDTO>();
+        for (int index = 0; index < i - 1; index++)
+        {
+            tempSequence.add(Sequence.get(index));
+        } 
+        return pro * GetprokTuple(tempSequence, j - 1);
+    }
+    
+    private float GetTopkPro (ArrayList<KhoaLuanDTO> Sequence, int k, int i) //Get top-k pro of ti 
+    {
+        float proTopk = 0;
+        float pro = Sequence.get(i-1).getPro();
+        if (i <= k)
+        {
+            return pro;
+        }
+        for(int j = 1; j <= k; j++)
+        {
+            proTopk += GetProTuple(Sequence, j);
+        }
+        return proTopk;
+    }
+    
+    private ArrayList GetSampleData(ArrayList<KhoaLuanDTO> dataList)
+    {
+        ArrayList<KhoaLuanDTO> sampleDataList = new ArrayList<KhoaLuanDTO>();
+        for (int i = 0; i < 6; i++)
+        {
+            sampleDataList.add(dataList.get(i));
+        }
+        return sampleDataList;
+    }
+            
     /**
      * @param args the command line arguments
      */
@@ -158,5 +239,6 @@ public class KhoaLuanForm extends javax.swing.JFrame {
     private javax.swing.JButton btnRun;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
+    private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
 }
