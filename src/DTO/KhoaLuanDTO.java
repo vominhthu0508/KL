@@ -5,15 +5,27 @@
  */
 package DTO;
 
+import java.util.*;
+
 /**
  *
  * @author DLT
  */
 public class KhoaLuanDTO {
     private int index;
+    private String Id;
     private float score;
     private float pro;
     private float topk;
+    public KhoaLuanDTO (int index, float score, float pro, float topk){
+        this.index = index;
+        this.score = score;
+        this.pro = pro;
+        this.topk = topk;
+    }
+    public KhoaLuanDTO(){
+        
+    }
     /**
      * @return the score
      */
@@ -68,5 +80,19 @@ public class KhoaLuanDTO {
      */
     public void setIndex(int index) {
         this.index = index;
+    } 
+
+    /**
+     * @return the Id
+     */
+    public String getId() {
+        return Id;
+    }
+
+    /**
+     * @param Id the Id to set
+     */
+    public void setId(String Id) {
+        this.Id = Id;
     }
 }

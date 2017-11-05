@@ -5,9 +5,12 @@
  */
 package GUI;
 
-import DAL.KhoaLuanDAL;
+import BLL.KhoaLuanBLL;
 import DTO.KhoaLuanDTO;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,20 +21,22 @@ import javax.swing.table.DefaultTableModel;
  * @author DLT
  */
 public class KhoaLuanForm extends javax.swing.JFrame {
-    KhoaLuanDAL dal = new KhoaLuanDAL();
+    KhoaLuanBLL bll = new KhoaLuanBLL();
     ArrayList<KhoaLuanDTO> dataList = new ArrayList<KhoaLuanDTO>();
-    /**
-     * Creates new form KhoaLuan_Form
-     */
+    
     public KhoaLuanForm() throws Exception {
         initComponents();
-        dataList = GetSampleData(dal.getAllData());
+        dataList = bll.getAllData();
+        //bll.DeleteExclusiveTable();
+//        Collections.sort(dataList, new SortByRoll());
+//        rankedSequence = GetRankedSequence(dataList, -1);
         ShowTable(dataList);
     }
     
     public void ShowTable (ArrayList<KhoaLuanDTO> dataList) throws Exception{
         Vector columns = new Vector();
         columns.add("Tuple");
+        columns.add("ProductId");
         columns.add("Score");
         columns.add("Probability");
         columns.add("Top-k probability");
@@ -41,6 +46,7 @@ public class KhoaLuanForm extends javax.swing.JFrame {
         {
             Vector row = new Vector();            
             row.add(data.getIndex());
+            row.add(data.getId());
             row.add(data.getScore());
             row.add(data.getPro());
             vector.add(row);
@@ -114,87 +120,191 @@ public class KhoaLuanForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnRunMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnRunMouseClicked
-        ArrayList<KhoaLuanDTO> Sequence = new ArrayList<KhoaLuanDTO>();
-        Sequence.add(dataList.get(0)); 
-        Sequence.add(dataList.get(1)); 
-        Sequence.add(dataList.get(2)); 
-        float result = GetTopkPro(Sequence, 2, 3);
+        ArrayList<KhoaLuanDTO> sequenceWithExclusiveRule = new ArrayList<KhoaLuanDTO>();
+        int i = 6;
+        float result = 0;
+        try {
+            //SetExclusiveRuleTable(dataList, 6);
+            sequenceWithExclusiveRule = GetSequenceWithExclusiveRule(dataList, i);
+            result = GetTopkPro(sequenceWithExclusiveRule, 2, i);
+        } catch (Exception ex) {
+            Logger.getLogger(KhoaLuanForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
         jTextField1.setText(String.valueOf(result));
     }//GEN-LAST:event_btnRunMouseClicked
 
-    private float GetprokTuple(ArrayList<KhoaLuanDTO> Sequence, int j) //pro of k tuples appearing in the sequence
+    //Theorem 1
+    private float GetProkTuple(ArrayList<KhoaLuanDTO> Sequence, int i, int j) //pro of k tuples appearing in the sequence, i index of tuple
     {
-        float prokTuple = 1; //pro of k tuple in the sequence
-        int i = Sequence.size();
-        float pro = Sequence.get(i-1).getPro(); //pro of tuple
-        ArrayList<KhoaLuanDTO> tempSequence = new ArrayList<KhoaLuanDTO>();
-        if (i == 1 && j != 0)
-        {
-            return pro;
-        }
-        if (i == 0 && j == 0)
+        float prokTuple = 1; //pro of k tuple in the sequence   
+        if (i + 1 == 0 && j == 0)
         {
             return 1;
         }
-        if (i == 0)
+        if (i + 1 == 0)
         {
             return 0;
         }
-        if (i > 0 && j == 0)
+        float pro = Sequence.get(i).getPro();
+        if (i + 1 == 1 && j == 1)
+        {
+            return pro;
+        }       
+        if (i + 1 > 0 && j == 0)
         {
             float prok = 0.0f; //pro of k not appearing in the Sequence
-            for (int k = 0; k < i ; k++) //k=0 same j=1
+            for (int k = 0; k <= i; k++) //k=0 same j=1
             {
                 prok = (1 - Sequence.get(k).getPro()); 
                 prokTuple *= prok;
             }
-            return prokTuple;
+             return prokTuple;
         }
-        for (int index = 0; index < i - 1; index++)
-        {
-            tempSequence.add(Sequence.get(index));
-        }       
-        prokTuple = GetprokTuple(tempSequence, j - 1) * pro + GetprokTuple(tempSequence, j) * (1 - pro);
+        prokTuple = GetProkTuple(Sequence, i - 1, j - 1) * pro + GetProkTuple(Sequence, i - 1, j) * (1 - pro);
         return prokTuple;
     }
     
-    private float GetProTuple (ArrayList<KhoaLuanDTO> Sequence, int j) //Get pro of tuple at position j
-    {
-        int i = Sequence.size();
-        float pro = Sequence.get(i-1).getPro();
-        ArrayList<KhoaLuanDTO> tempSequence = new ArrayList<KhoaLuanDTO>();
-        for (int index = 0; index < i - 1; index++)
-        {
-            tempSequence.add(Sequence.get(index));
-        } 
-        return pro * GetprokTuple(tempSequence, j - 1);
-    }
-    
+    //Theorem 3
     private float GetTopkPro (ArrayList<KhoaLuanDTO> Sequence, int k, int i) //Get top-k pro of ti 
     {
         float proTopk = 0;
-        float pro = Sequence.get(i-1).getPro();
-        if (i <= k)
-        {
-            return pro;
-        }
+        KhoaLuanDTO tuple = new KhoaLuanDTO();
+        tuple = GetTupleByIndex(Sequence, i);
+        int currentIndex = Sequence.indexOf(tuple);
+        float pro = tuple.getPro(); //pro of tuple
         for(int j = 1; j <= k; j++)
         {
-            proTopk += GetProTuple(Sequence, j);
+            proTopk += GetProkTuple(Sequence, currentIndex - 1, j - 1);
         }
-        return proTopk;
+        return pro * proTopk;
+    }
+      
+    private void SetExclusiveRuleTable(ArrayList<KhoaLuanDTO> Sequence, int i) throws Exception
+    {
+        for (int t = 0; t < Sequence.size() - 1; t++)
+        {
+            ArrayList<KhoaLuanDTO> LeftSequence = new ArrayList<KhoaLuanDTO>();
+            for (int t2 = t + 1; t2 < Sequence.size(); t2++)
+            {
+                if (Sequence.get(t).getId().equalsIgnoreCase(Sequence.get(t2).getId()))
+                {
+                    if (Sequence.get(t).getIndex() <= i || Sequence.get(t2).getIndex() <= i)
+                    {
+                        LeftSequence.add(Sequence.get(t2));
+                    }
+                }
+            }
+            if (LeftSequence.size() > 0)
+            {
+                bll.InsertExclusiveTable(Sequence.get(t).getIndex(), GetExclusiveTupleString(LeftSequence));
+            }
+        }
     }
     
-    private ArrayList GetSampleData(ArrayList<KhoaLuanDTO> dataList)
+    private ArrayList<KhoaLuanDTO> GetSequenceWithExclusiveRule(ArrayList<KhoaLuanDTO> Sequence, int i) throws Exception
     {
-        ArrayList<KhoaLuanDTO> sampleDataList = new ArrayList<KhoaLuanDTO>();
-        for (int i = 0; i < 6; i++)
+        String exclusiveTupleString = "";
+        ArrayList<KhoaLuanDTO> sequenceWithExclusiveRule = new ArrayList<KhoaLuanDTO>();
+        for (int t = 0; t < i; t++)
         {
-            sampleDataList.add(dataList.get(i));
+            if (Sequence.get(t).getIndex() == -1)
+            {
+                continue;
+            }
+            exclusiveTupleString = bll.GetExclusiveTupleString(t + 1);
+            if(exclusiveTupleString == "")
+            {
+                sequenceWithExclusiveRule.add(Sequence.get(t));
+                continue;
+            }
+            else
+            {
+                if (!exclusiveTupleString.contains(",")) // only one tuple
+                {
+                    if (t + 1 == Integer.valueOf(exclusiveTupleString))
+                    {
+                        continue;
+                    }
+                    
+                    if (i != Integer.valueOf(exclusiveTupleString) && i != t + 1) //ti not in RhLeft
+                    {
+                        float sumPro = Sequence.get(t).getPro() 
+                                        + Sequence.get(Integer.valueOf(exclusiveTupleString) - 1).getPro();
+                        KhoaLuanDTO newTuple = new KhoaLuanDTO();
+                        newTuple.setIndex(Integer.valueOf(String.valueOf(Sequence.get(t).getIndex()) 
+                                                            + String.valueOf(exclusiveTupleString)));
+                        newTuple.setPro(sumPro);
+                        sequenceWithExclusiveRule.add(newTuple);
+                        Sequence.get(Integer.valueOf(exclusiveTupleString) - 1).setIndex(-1);
+                    }
+                    else  //ti in RhLeft
+                    {
+                        Sequence.get(t).setIndex(-1);
+                    }
+                }
+            }
         }
-        return sampleDataList;
+        return sequenceWithExclusiveRule;
     }
-            
+    
+    private String GetExclusiveTupleString(ArrayList<KhoaLuanDTO> tuples)
+    {
+        String exclusiveTupleString = "";
+        if (tuples.size() == 1)
+        {
+            exclusiveTupleString += tuples.get(tuples.size() - 1).getIndex();
+        }
+        else
+        {
+            for(int t = 0; t < tuples.size(); t++)
+            {
+                if (t < tuples.size() - 1)
+                {
+                    exclusiveTupleString += tuples.get(t).getIndex() + ",";
+                }
+                else
+                {
+                    exclusiveTupleString += String.valueOf(tuples.get(t).getIndex());
+                }
+            }
+        }        
+        return exclusiveTupleString;
+    }
+    
+    private KhoaLuanDTO GetTupleByIndex (ArrayList<KhoaLuanDTO> sequence, int indexOfTuple)
+    {
+        KhoaLuanDTO tuple = new KhoaLuanDTO();
+        for (int t = 0; t < sequence.size(); t++)
+        {
+            if (sequence.get(t).getIndex() == indexOfTuple)
+            {
+                 tuple = sequence.get(t);
+                 break;
+            }
+        }
+        return tuple;
+    }
+    
+    private ArrayList GetRankedSequence(ArrayList<KhoaLuanDTO> dataList, int i) throws Exception
+    {
+        ArrayList<KhoaLuanDTO> rankedSequence = new ArrayList<KhoaLuanDTO>();
+        if (i == -1) 
+        {
+            i = dataList.size();
+        }
+        for (int t = 1; t <= i; t++)
+        {
+            KhoaLuanDTO tuple = new KhoaLuanDTO();
+            tuple = dataList.get(t - 1);
+            tuple.setIndex(t); 
+            bll.UpdateIndexOfTuple(t);
+            rankedSequence.add(tuple);
+        }
+        return rankedSequence;
+    }
+
     /**
      * @param args the command line arguments
      */

@@ -19,4 +19,24 @@ public class KhoaLuanBLL {
     {
         return dal.getAllData();
     }
+    
+    public void UpdateIndexOfTuple(int index) throws Exception
+    {
+        dal.UpdateIndexOfTuple(index);
+    }
+    
+    public void InsertExclusiveTable(int indexOfTuple, String exclusiveTuples) throws Exception
+    {
+        dal.InsertExclusiveTable(indexOfTuple, exclusiveTuples);
+    }
+    
+    public String GetExclusiveTupleString(int indexOfTuple) throws Exception
+    {
+        return dal.GetExclusiveTupleString(indexOfTuple);
+    }
+    
+    public void DeleteExclusiveTable () throws Exception
+    {
+        dal.DeleteExclusiveTable();
+    }
 }

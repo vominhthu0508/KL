@@ -61,7 +61,7 @@ public class SqliteConnection {
         }
         //Nếu không thành công ném lỗi ra ngoài.
         catch(Exception e){
-            throw new Exception("Erro: " +e.getMessage() +" - "+Query);}
+            throw new Exception("Error: " +e.getMessage() +" - "+Query);}
         finally{
             //Đóng kết nối.
             this.getClose();
