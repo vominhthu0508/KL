@@ -78,5 +78,31 @@ public class KhoaLuanDAL {
         connect.Close();
     }
     
+    public void InsertInclusiveTable(int indexOfTuple, String inclusiveTuples) throws Exception
+    {
+        HashMap<String, Object>map = new HashMap<String,Object>();
+        map.put("indexOfTuple", indexOfTuple);
+        map.put("inclusiveTuple", inclusiveTuples);
+        connect.Insert("InclusiveRule", map);
+        connect.Close();
+    }
+    
+    public String GetInclusiveTupleString(int indexOfTuple) throws Exception
+    {
+        String exclusiveTuples = "";
+        ResultSet rs = connect.Select("InclusiveRule", "indexOfTuple = " + indexOfTuple);
+        if(rs.next())
+        {            
+            exclusiveTuples = (rs.getString("inclusiveTuple"));
+        }
+        connect.Close();
+        return exclusiveTuples;  
+    }
+    
+    public void DeleteInclusiveTable() throws Exception
+    {
+        connect.Delete("InclusiveRule",null);
+        connect.Close();
+    }
 }
    

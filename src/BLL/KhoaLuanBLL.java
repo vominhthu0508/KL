@@ -39,4 +39,20 @@ public class KhoaLuanBLL {
     {
         dal.DeleteExclusiveTable();
     }
+    
+    public void InsertInclusiveTable(int indexOfTuple, String inclusiveTuples) throws Exception
+    {
+        dal.InsertInclusiveTable(indexOfTuple, inclusiveTuples);
+    }
+    
+    public String GetInclusiveTupleString(int indexOfTuple) throws Exception
+    {
+        return dal.GetInclusiveTupleString(indexOfTuple);
+    }
+    
+    public void DeleteInclusiveTable () throws Exception
+    {
+        dal.DeleteInclusiveTable();
+    }
+    
 }
