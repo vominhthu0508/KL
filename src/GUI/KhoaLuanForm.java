@@ -11,6 +11,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Optional;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -136,8 +138,8 @@ public class KhoaLuanForm extends javax.swing.JFrame {
             //result = GetTopkPro(sequenceWithExclusiveRule, 2, i);
             
             //SetInclusiveRuleTable(dataList, i);
-            result = GetProTopkWithInclusiveRule(dataList, k, i);
-            
+            //result = GetProTopkWithInclusiveRule(dataList, k, i);
+            GetSequenceTopkBestPro(dataList, 2);
             //result = GetTopkPro(dataList, 4, 6);
         } catch (Exception ex) {
             Logger.getLogger(KhoaLuanForm.class.getName()).log(Level.SEVERE, null, ex);
@@ -240,6 +242,11 @@ public class KhoaLuanForm extends javax.swing.JFrame {
             {
                 if (!exclusiveTupleString.contains(",")) // only one tuple
                 {
+                    if (t + 1 == i && i < Integer.valueOf(exclusiveTupleString))
+                    {
+                        sequenceWithExclusiveRule.add(Sequence.get(t));
+                        continue;
+                    }
                     if (t + 1 == Integer.valueOf(exclusiveTupleString))
                     {
                         continue;
@@ -392,6 +399,57 @@ public class KhoaLuanForm extends javax.swing.JFrame {
             proTopk += GetProkTuple(sequenceWithInclusiveRule, currentIndex - 1, j - 1);
         }
         return pro * proTopk;
+    }
+    
+    private ArrayList<KhoaLuanDTO> GetSequenceTopkBestPro (ArrayList<KhoaLuanDTO> sequence, int k) throws Exception
+    {
+        ArrayList<KhoaLuanDTO> QtopSet = new ArrayList<KhoaLuanDTO>();
+        ArrayList<KhoaLuanDTO> Q_pro = new ArrayList<KhoaLuanDTO>();
+        ArrayList<KhoaLuanDTO> Q_score = new ArrayList<KhoaLuanDTO>();
+        float minTopk = sequence.get(0).getTopk();
+        float bestPr = 0;
+        float proTopk = 0;
+        float p_prev = 0;
+        for (int i = 0; i < sequence.size(); i++)
+        {
+            if (i + 1 <= k)
+            {
+                sequence.get(i).setTopk(sequence.get(i).getPro());
+                Q_score.add(sequence.get(i));
+                Optional<KhoaLuanDTO> minTuple = sequence.stream().min(Comparator.comparing(KhoaLuanDTO::getTopk));
+                KhoaLuanDTO minTopkTuple = Collections.min(Q_score, new Comparator<KhoaLuanDTO>(){
+                    public int compare (KhoaLuanDTO tuple1, KhoaLuanDTO tuple2) {
+                        if (tuple1.getTopk() < tuple2.getTopk()) {
+                            return -1;
+                        } else if (tuple1.getTopk() == tuple2.getTopk()) {
+                            return 0;
+                        } else {
+                            return 1;
+                        }
+                   }
+                });
+                bestPr = minTopkTuple.getTopk();
+                p_prev = bestPr;
+            }
+            else
+            {
+                float pro = sequence.get(i).getPro(); //pro of tuple i
+                if (pro > bestPr && pro > p_prev)
+                {
+                    ArrayList<KhoaLuanDTO> sequenceWithExclusiveRule = GetSequenceWithExclusiveRule(sequence, i + 1);
+                    proTopk = GetTopkPro(sequenceWithExclusiveRule, k, i + 1);
+                    if (proTopk > bestPr)
+                    {
+                        bestPr = proTopk;
+                        Q_pro.add(sequence.get(i));
+                        p_prev = pro;
+                    }
+                }
+            }
+        }    
+        QtopSet.addAll(Q_score);
+        QtopSet.addAll(Q_pro);
+        return QtopSet;
     }
     
     private KhoaLuanDTO GetTupleByIndex (ArrayList<KhoaLuanDTO> sequence, int indexOfTuple)
