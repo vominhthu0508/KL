@@ -5,7 +5,7 @@
  */
 package DAL;
 import DAL.MyConnectUnit;
-import DTO.KhoaLuanDTO;
+import DTO.*;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -60,16 +60,19 @@ public class KhoaLuanDAL {
         connect.Close();
     }
     
-    public String GetExclusiveTupleString(int indexOfTuple) throws Exception
+    public ArrayList<ExclusiveRuleDTO> GetExclusiveRulesByIndex(int indexOfTuple) throws Exception
     {
-        String exclusiveTuples = "";
         ResultSet rs = connect.Select("ExclusiveRule", "indexOfTuple = " + indexOfTuple);
-        if(rs.next())
-        {            
-            exclusiveTuples = (rs.getString("exclusiveTuple"));
+        ArrayList<ExclusiveRuleDTO> exclusiveRules = new ArrayList<ExclusiveRuleDTO>();
+        while(rs.next())
+        {
+            ExclusiveRuleDTO data= new ExclusiveRuleDTO();
+            data.setIndexOfTuple(rs.getInt("indexOfTuple"));
+            data.setExclusiveTuple(rs.getInt("exclusiveTuple"));
+            exclusiveRules.add(data);
         }
         connect.Close();
-        return exclusiveTuples;  
+        return exclusiveRules;  
     }
     
     public void DeleteExclusiveTable() throws Exception
@@ -78,12 +81,12 @@ public class KhoaLuanDAL {
         connect.Close();
     }
     
-    public void InsertInclusiveTable(int indexOfTuple, String inclusiveTuples) throws Exception
+    public void InsertInclusiveTable(int indexOfTuple, int inclusiveTuple) throws Exception
     {
         HashMap<String, Object>map = new HashMap<String,Object>();
         map.put("indexOfTuple", indexOfTuple);
-        map.put("inclusiveTuple", inclusiveTuples);
-        connect.Insert("InclusiveTuple", map);
+        map.put("inclusiveTuple", inclusiveTuple);
+        connect.Insert("InclusiveRule", map);
         connect.Close();
     }
     

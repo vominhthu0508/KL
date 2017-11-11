@@ -6,7 +6,7 @@
 package BLL;
 
 import DAL.KhoaLuanDAL;
-import DTO.KhoaLuanDTO;
+import DTO.*;
 import java.util.ArrayList;
 
 /**
@@ -30,9 +30,9 @@ public class KhoaLuanBLL {
         dal.InsertExclusiveTable(indexOfTuple, exclusiveTuple);
     }
     
-    public String GetExclusiveTupleString(int indexOfTuple) throws Exception
+    public ArrayList<ExclusiveRuleDTO> GetExclusiveRulesByIndex(int indexOfTuple) throws Exception
     {
-        return dal.GetExclusiveTupleString(indexOfTuple);
+        return dal.GetExclusiveRulesByIndex(indexOfTuple);
     }
     
     public void DeleteExclusiveTable () throws Exception
@@ -40,9 +40,9 @@ public class KhoaLuanBLL {
         dal.DeleteExclusiveTable();
     }
     
-    public void InsertInclusiveTable(int indexOfTuple, String inclusiveTuples) throws Exception
+    public void InsertInclusiveTable(int indexOfTuple, int inclusiveTuple) throws Exception
     {
-        dal.InsertInclusiveTable(indexOfTuple, inclusiveTuples);
+        dal.InsertInclusiveTable(indexOfTuple, inclusiveTuple);
     }
     
     public String GetInclusiveTupleString(int indexOfTuple) throws Exception
