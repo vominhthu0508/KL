@@ -28,9 +28,9 @@ public class KhoaLuanDAL {
         {
             KhoaLuanDTO data= new KhoaLuanDTO();
             data.setIndex(rs.getInt("indexOfTuple"));
-            data.setId(rs.getString("ProductID"));
-            data.setScore(rs.getFloat("Score"));
-            data.setPro(rs.getFloat("Pro"));
+            data.setId(rs.getString("productID"));
+            data.setScore(rs.getFloat("score"));
+            data.setPro(rs.getFloat("pro"));
             dataList.add(data);
         }
         connect.Close();
@@ -51,11 +51,11 @@ public class KhoaLuanDAL {
         connect.Close();
     }
     
-    public void InsertExclusiveTable(int indexOfTuple, String exclusiveTuples) throws Exception
+    public void InsertExclusiveTable(int indexOfTuple, int exclusiveTuple) throws Exception
     {
         HashMap<String, Object>map = new HashMap<String,Object>();
         map.put("indexOfTuple", indexOfTuple);
-        map.put("exclusiveTuple", exclusiveTuples);
+        map.put("exclusiveTuple", exclusiveTuple);
         connect.Insert("ExclusiveRule", map);
         connect.Close();
     }
@@ -83,14 +83,14 @@ public class KhoaLuanDAL {
         HashMap<String, Object>map = new HashMap<String,Object>();
         map.put("indexOfTuple", indexOfTuple);
         map.put("inclusiveTuple", inclusiveTuples);
-        connect.Insert("InclusiveRule", map);
+        connect.Insert("InclusiveTuple", map);
         connect.Close();
     }
     
     public String GetInclusiveTupleString(int indexOfTuple) throws Exception
     {
         String exclusiveTuples = "";
-        ResultSet rs = connect.Select("InclusiveRule", "indexOfTuple = " + indexOfTuple);
+        ResultSet rs = connect.Select("InclusiveTuple", "indexOfTuple = " + indexOfTuple);
         if(rs.next())
         {            
             exclusiveTuples = (rs.getString("inclusiveTuple"));
@@ -101,7 +101,7 @@ public class KhoaLuanDAL {
     
     public void DeleteInclusiveTable() throws Exception
     {
-        connect.Delete("InclusiveRule",null);
+        connect.Delete("InclusiveTuple",null);
         connect.Close();
     }
 }

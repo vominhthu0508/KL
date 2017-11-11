@@ -25,9 +25,9 @@ public class KhoaLuanBLL {
         dal.UpdateIndexOfTuple(index);
     }
     
-    public void InsertExclusiveTable(int indexOfTuple, String exclusiveTuples) throws Exception
+    public void InsertExclusiveTable(int indexOfTuple, int exclusiveTuple) throws Exception
     {
-        dal.InsertExclusiveTable(indexOfTuple, exclusiveTuples);
+        dal.InsertExclusiveTable(indexOfTuple, exclusiveTuple);
     }
     
     public String GetExclusiveTupleString(int indexOfTuple) throws Exception
