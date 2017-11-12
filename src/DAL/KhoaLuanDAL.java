@@ -90,21 +90,24 @@ public class KhoaLuanDAL {
         connect.Close();
     }
     
-    public String GetInclusiveTupleString(int indexOfTuple) throws Exception
+    public ArrayList<InclusiveRuleDTO> GetInclusiveRulesByIndex(int indexOfTuple) throws Exception
     {
-        String exclusiveTuples = "";
-        ResultSet rs = connect.Select("InclusiveTuple", "indexOfTuple = " + indexOfTuple);
-        if(rs.next())
-        {            
-            exclusiveTuples = (rs.getString("inclusiveTuple"));
+        ResultSet rs = connect.Select("InclusiveRule", "indexOfTuple = " + indexOfTuple);
+        ArrayList<InclusiveRuleDTO> inclusiveRules = new ArrayList<InclusiveRuleDTO>();
+        while(rs.next())
+        {
+            InclusiveRuleDTO data= new InclusiveRuleDTO();
+            data.setIndexOfTuple(rs.getInt("indexOfTuple"));
+            data.setInclusiveTuple(rs.getInt("inclusiveTuple"));
+            inclusiveRules.add(data);
         }
         connect.Close();
-        return exclusiveTuples;  
+        return inclusiveRules;  
     }
     
     public void DeleteInclusiveTable() throws Exception
     {
-        connect.Delete("InclusiveTuple",null);
+        connect.Delete("InclusiveRule",null);
         connect.Close();
     }
 }

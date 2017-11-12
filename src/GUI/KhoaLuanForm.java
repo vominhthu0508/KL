@@ -28,10 +28,6 @@ public class KhoaLuanForm extends javax.swing.JFrame {
     
     public KhoaLuanForm() throws Exception {
         initComponents();
-//        dataList.add(new KhoaLuanDTO(1, 25, (float)0.29, 0));
-//        dataList.add(new KhoaLuanDTO(2, 18, (float)0.3, 0));
-//        dataList.add(new KhoaLuanDTO(35, 17, (float)0.7, 0));
-//        dataList.add(new KhoaLuanDTO(6, 11, (float)0.2, 0));
         
         dataList = bll.getAllData();
         //bll.DeleteExclusiveTable();
@@ -137,18 +133,19 @@ public class KhoaLuanForm extends javax.swing.JFrame {
 
     private void btnRunMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnRunMouseClicked
         ArrayList<KhoaLuanDTO> topkTuples = new ArrayList<KhoaLuanDTO>();
-        ArrayList<KhoaLuanDTO> sequenceWithExclusiveRule = new ArrayList<KhoaLuanDTO>();
+        ArrayList<KhoaLuanDTO> sequenceWithInclusiveRule = new ArrayList<KhoaLuanDTO>();
         int i = 6;
         int k = 2;
         //float result = 0;
         try {
+            SetGenerationRuleTable(dataList, i);
             //SetExclusiveRuleTable(dataList, i);
 //            sequenceWithExclusiveRule = GetSequenceWithExclusiveRule(dataList, Integer.valueOf(jTextField1.getText()));
 //            float result = GetTopkPro(sequenceWithExclusiveRule, 2, Integer.valueOf(jTextField1.getText()));
 //            jTextField1.setText(String.valueOf(result));
-            SetInclusiveRuleTable(dataList, i);
-            //result = GetProTopkWithInclusiveRule(dataList, k, i);
-            //topkTuples = GetSequenceTopkBestPro(dataList, Integer.valueOf(jTextField1.getText()));
+            //SetInclusiveRuleTable(dataList, i);
+            //sequenceWithInclusiveRule = GetSequenceWithInclusiveRule(dataList, 6);
+            topkTuples = GetSequenceTopkBestPro(dataList, Integer.valueOf(jTextField1.getText()));
             //result = GetTopkPro(dataList, 4, 6);
             //result = GetProTopkWithGenerationRule(dataList, k, i);
             
@@ -156,9 +153,9 @@ public class KhoaLuanForm extends javax.swing.JFrame {
             Logger.getLogger(KhoaLuanForm.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-//        Result result= new Result();
-//        result.setVisible(true);
-//        result.ShowResult(topkTuples);
+        Result result= new Result();
+        result.setVisible(true);
+        result.ShowResult(topkTuples);
     }//GEN-LAST:event_btnRunMouseClicked
 
     //Theorem 1
@@ -207,6 +204,51 @@ public class KhoaLuanForm extends javax.swing.JFrame {
         return pro * proTopk;
     }
       
+    private void SetGenerationRuleTable(ArrayList<KhoaLuanDTO> Sequence, int i) throws Exception
+    {
+        for (int t = 0; t < i - 1; t++)
+        {
+            float sumPro = Sequence.get(t).getPro();
+            ArrayList<KhoaLuanDTO> LeftSequence = new ArrayList<KhoaLuanDTO>();
+            ArrayList<KhoaLuanDTO> inclusiveSequence = new ArrayList<KhoaLuanDTO>();
+            for (int t2 = t + 1; t2 < i; t2++)
+            {
+                if (Sequence.get(t2).getIndex() == -1)
+                {
+                    continue;
+                }
+                if (Sequence.get(t).getId().equalsIgnoreCase(Sequence.get(t2).getId()))
+                {
+                    sumPro += Sequence.get(t2).getPro();
+                    if (sumPro <= 1)
+                    {
+                        LeftSequence.add(Sequence.get(t2));
+                    }
+                }
+                if (Sequence.get(t).getPro() == Sequence.get(t2).getPro())
+                {
+                    inclusiveSequence.add(Sequence.get(t2));
+                }
+            }
+            if (LeftSequence.size() > 0)
+            {
+                for (int index = 0; index < LeftSequence.size(); index++)
+                {
+                    bll.InsertExclusiveTable(Sequence.get(t).getIndex(), LeftSequence.get(index).getIndex());
+                    Sequence.get(LeftSequence.get(index).getIndex() - 1).setIndex(-1);
+                }
+            }
+            if (inclusiveSequence.size() > 0)
+            {
+                for (int index = 0; index < inclusiveSequence.size(); index++)
+                {
+                    bll.InsertInclusiveTable(Sequence.get(t).getIndex(), inclusiveSequence.get(index).getIndex());
+                    Sequence.get(inclusiveSequence.get(index).getIndex() - 1).setIndex(-1);
+                }
+            }
+        }
+    }
+    
     private void SetExclusiveRuleTable(ArrayList<KhoaLuanDTO> Sequence, int i) throws Exception
     {
         for (int t = 0; t < Sequence.size() - 1; t++)
@@ -323,86 +365,50 @@ public class KhoaLuanForm extends javax.swing.JFrame {
         }
     }
     
-    private String GetInclusiveTupleString(ArrayList<KhoaLuanDTO> tuples)
+    private ArrayList<KhoaLuanDTO> GetSequenceWithInclusiveRule(ArrayList<KhoaLuanDTO> Sequence, int i) throws Exception
     {
-        String inclusiveTupleString = "";
-        if (tuples.size() == 1)
-        {
-            inclusiveTupleString += tuples.get(tuples.size() - 1).getIndex();
-        }
-        else
-        {
-            for(int t = 0; t < tuples.size(); t++)
-            {
-                if (t < tuples.size() - 1)
-                {
-                    inclusiveTupleString += tuples.get(t).getIndex() + ",";
-                }
-                else
-                {
-                    inclusiveTupleString += String.valueOf(tuples.get(t).getIndex());
-                }
-            }
-        }        
-        return inclusiveTupleString;
-    }
-    
-    private float GetProTopkWithInclusiveRule(ArrayList<KhoaLuanDTO> Sequence, int k, int i) throws Exception
-    {
-        float proTopk = 0;
         ArrayList<KhoaLuanDTO> sequenceWithInclusiveRule = new ArrayList<KhoaLuanDTO>();
-        KhoaLuanDTO tuple = new KhoaLuanDTO();
-        tuple = GetTupleByIndex(Sequence, i);
-        float pro = tuple.getPro(); //pro of tuple
-        String inclusiveTupleString = "";        
-        int z = 0;
-        for (int t = 0; t < i - 1; t++)
+        for (int t = 0; t < i; t++)
         {
+            if (t + 1 == i)
+            {
+                break;
+            }
             if (Sequence.get(t).getIndex() == -1)
             {
                 continue;
             }
-            inclusiveTupleString = bll.GetInclusiveTupleString(t + 1);
-            if(inclusiveTupleString == "")
+            ArrayList<InclusiveRuleDTO> inclusiveRules = new ArrayList<InclusiveRuleDTO>();
+            inclusiveRules = bll.GetInclusiveRulesByIndex(t + 1);
+            if(inclusiveRules.size() == 0)
             {
                 sequenceWithInclusiveRule.add(Sequence.get(t));
                 continue;
             }
             else
             {
-                if (!inclusiveTupleString.contains(",")) // only one tuple
+                for (int index = 0; index < inclusiveRules.size(); index++)
                 {
-                    if (i != Integer.valueOf(inclusiveTupleString) && i != t + 1)  //ti not in RhLeft
+                    if (i != inclusiveRules.get(index).getInclusiveTuple() && i != t + 1)  //ti not in R*h'
                     {
-                        sequenceWithInclusiveRule.add(Sequence.get(t));                        
-                        z = sequenceWithInclusiveRule.size();
-                        int currentIndex = sequenceWithInclusiveRule.size() - 1;
-                        for(int j = 1; j <= z; j++)
-                        {
-                            proTopk += GetProkTuple(Sequence, currentIndex - 1, j - 1);
-                        }
+                        KhoaLuanDTO newTuple = new KhoaLuanDTO();
+                        newTuple.setIndex(Integer.valueOf(String.valueOf(Sequence.get(t).getIndex()) 
+                                                            + String.valueOf(inclusiveRules.get(index).getInclusiveTuple())));
+                        newTuple.setPro(Sequence.get(t).getPro());
+                        sequenceWithInclusiveRule.add(newTuple);
+                        Sequence.get(inclusiveRules.get(index).getInclusiveTuple() - 1).setIndex(-1);
                     }
-                    else  //ti in RhLeft
+                    else  //ti in R*h'
                     {
                         if (t + 1 < i)
                         {
-                            z = 1; // There is 1 tuple ranked higher than ti
-                            continue;
+                            Sequence.get(inclusiveRules.get(index).getInclusiveTuple() - 1).setIndex(-1);
                         }
-                        sequenceWithInclusiveRule.add(Sequence.get(t));
-                        Sequence.get(t).setIndex(t);
                     }
                 }
             }
         }
-        
-        // for rule R2
-        int currentIndex = sequenceWithInclusiveRule.size() - 1;
-        for(int j = 1; j <= (k - z); j++)
-        {
-            proTopk += GetProkTuple(sequenceWithInclusiveRule, currentIndex - 1, j - 1);
-        }
-        return pro * proTopk;
+        return sequenceWithInclusiveRule;
     }
     
     private float GetProTopkWithGenerationRule(ArrayList<KhoaLuanDTO> Sequence, int k, int i) throws Exception
@@ -410,80 +416,75 @@ public class KhoaLuanForm extends javax.swing.JFrame {
         float proTopk = 0;
         ArrayList<KhoaLuanDTO> sequenceWithGenerationRule = new ArrayList<KhoaLuanDTO>();
         KhoaLuanDTO tuple = new KhoaLuanDTO();
-        tuple = GetTupleByIndex(Sequence, i);
-        float pro = tuple.getPro(); //pro of tuple
+        tuple = Sequence.get(i - 1);
         int z = 0;
         for (int t = 0; t < i; t++)
         {
-            String inclusiveTupleString = "";
-            String exclusiveTupleString = "";
+            ArrayList<ExclusiveRuleDTO> exclusiveRules = new ArrayList<ExclusiveRuleDTO>();
+            ArrayList<InclusiveRuleDTO> inclusiveRules = new ArrayList<InclusiveRuleDTO>();
             if (Sequence.get(t).getIndex() == -1)
             {
                 continue;
             }
-            inclusiveTupleString = bll.GetInclusiveTupleString(t + 1);
-            //exclusiveTupleString = bll.GetExclusiveRulesByIndex(t + 1);
-            if(inclusiveTupleString == "" && exclusiveTupleString == "")
+            exclusiveRules = bll.GetExclusiveRulesByIndex(t + 1);
+            inclusiveRules = bll.GetInclusiveRulesByIndex(t + 1);
+            if(exclusiveRules.size() == 0 && inclusiveRules.size() == 0)
             {
                 sequenceWithGenerationRule.add(Sequence.get(t));
                 continue;
             }
             else
             {
-                if (inclusiveTupleString != "")
+                if (exclusiveRules.size() != 0)
                 {
-                    if (!inclusiveTupleString.contains(",")) // only one tuple
+                    for (int e = 0; e < exclusiveRules.size(); e++)
                     {
-                        if (i != Integer.valueOf(inclusiveTupleString) && i != t + 1)  //ti not in RhLeft
-                        {
-                            sequenceWithGenerationRule.add(Sequence.get(t));                        
-                            z = sequenceWithGenerationRule.size();
-                            int currentIndex = sequenceWithGenerationRule.size() - 1;
-                            for(int j = 1; j <= z; j++)
-                            {
-                                proTopk += GetProkTuple(Sequence, currentIndex - 1, j - 1);
-                            }
-                        }
-                        else  //ti in RhLeft
-                        {
-                            if (t + 1 < i)
-                            {
-                                z = 1; // There is 1 tuple ranked higher than ti
-                                continue;
-                            }
-                            sequenceWithGenerationRule.add(Sequence.get(t));
-                            Sequence.get(t).setIndex(t);
-                        }
-                    }
-                }
-                else if (exclusiveTupleString != "")
-                {
-                    if (!exclusiveTupleString.contains(",")) // only one tuple
-                    {
-                        if (t + 1 == i && i < Integer.valueOf(exclusiveTupleString))
+                        if (t + 1 <= i && i < exclusiveRules.get(e).getExclusiveTuple())
                         {
                             sequenceWithGenerationRule.add(Sequence.get(t));
                             continue;
                         }
-                        if (t + 1 == Integer.valueOf(exclusiveTupleString) || Integer.valueOf(exclusiveTupleString) > i)
+                        if (t + 1 == exclusiveRules.get(e).getExclusiveTuple())
                         {
                             continue;
                         }
 
-                        if (i != Integer.valueOf(exclusiveTupleString) && i != t + 1) //ti not in RhLeft
+                        if (i != exclusiveRules.get(e).getExclusiveTuple() && i != t + 1) //ti not in RhLeft
                         {
                             float sumPro = Sequence.get(t).getPro() 
-                                            + Sequence.get(Integer.valueOf(exclusiveTupleString) - 1).getPro();
+                                            + Sequence.get(exclusiveRules.get(e).getExclusiveTuple() - 1).getPro();
                             KhoaLuanDTO newTuple = new KhoaLuanDTO();
                             newTuple.setIndex(Integer.valueOf(String.valueOf(Sequence.get(t).getIndex()) 
-                                                                + String.valueOf(exclusiveTupleString)));
+                                                                + String.valueOf(exclusiveRules.get(e).getExclusiveTuple())));
                             newTuple.setPro(sumPro);
                             sequenceWithGenerationRule.add(newTuple);
-                            Sequence.get(Integer.valueOf(exclusiveTupleString) - 1).setIndex(-1);
+                            Sequence.get(exclusiveRules.get(e).getExclusiveTuple() - 1).setIndex(-1);
                         }
                         else  //ti in RhLeft
                         {
                             Sequence.get(t).setIndex(-1);
+                        }
+                    }
+                }
+                if (inclusiveRules.size() != 0)
+                {
+                    for (int index = 0; index < inclusiveRules.size(); index++)
+                    {
+                        if (i != inclusiveRules.get(index).getInclusiveTuple() && i != t + 1)  //ti not in R*h'
+                        {
+                            KhoaLuanDTO newTuple = new KhoaLuanDTO();
+                            newTuple.setIndex(Integer.valueOf(String.valueOf(Sequence.get(t).getIndex()) 
+                                                                + String.valueOf(inclusiveRules.get(index).getInclusiveTuple())));
+                            newTuple.setPro(Sequence.get(t).getPro());
+                            sequenceWithGenerationRule.add(newTuple);
+                            Sequence.get(inclusiveRules.get(index).getInclusiveTuple() - 1).setIndex(-1);
+                        }
+                        else  //ti in R*h'
+                        {
+                            if (t + 1 < i)
+                            {
+                                Sequence.get(inclusiveRules.get(index).getInclusiveTuple() - 1).setIndex(-1);
+                            }
                         }
                     }
                 }
@@ -502,7 +503,7 @@ public class KhoaLuanForm extends javax.swing.JFrame {
         {
             proTopk += GetProkTuple(sequenceWithGenerationRule, currentIndex - 1, j - 1);
         }
-        return pro * proTopk;
+        return tuple.getPro() * proTopk;
     }
     
     private ArrayList<KhoaLuanDTO> GetSequenceTopkBestPro (ArrayList<KhoaLuanDTO> sequence, int k) throws Exception
@@ -519,9 +520,9 @@ public class KhoaLuanForm extends javax.swing.JFrame {
             {
                 sequence.get(i).setTopk(sequence.get(i).getPro());
                 Q_score.add(sequence.get(i));
-                KhoaLuanDTO maxTopkTuple = Collections.max(Q_score, new Comparator<KhoaLuanDTO>(){
+                KhoaLuanDTO minTopkTuple = Collections.min(Q_score, new Comparator<KhoaLuanDTO>(){
                     public int compare (KhoaLuanDTO tuple1, KhoaLuanDTO tuple2) {
-                        if (tuple1.getPro()< tuple2.getPro()) {
+                        if (tuple1.getPro() > tuple2.getPro()) {
                             return -1;
                         } else if (tuple1.getPro() == tuple2.getPro()) {
                             return 0;
@@ -530,7 +531,7 @@ public class KhoaLuanForm extends javax.swing.JFrame {
                         }
                    }
                 });
-                bestPr = maxTopkTuple.getTopk();
+                bestPr = minTopkTuple.getTopk();
                 p_prev = bestPr;
             }
             else
@@ -548,7 +549,7 @@ public class KhoaLuanForm extends javax.swing.JFrame {
                         p_prev = pro;
                     }
                 }
-                if (Q_score.size() == k && Q_pro.size() == k)
+                if (bestPr > pro)
                 {
                     break;
                 }

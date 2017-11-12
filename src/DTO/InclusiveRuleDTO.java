@@ -11,7 +11,7 @@ package DTO;
  */
 public class InclusiveRuleDTO {
     private int indexOfTuple;
-    private int exclusiveTuple;
+    private int inclusiveTuple;
 
     /**
      * @return the indexOfTuple
@@ -28,17 +28,19 @@ public class InclusiveRuleDTO {
     }
 
     /**
-     * @return the exclusiveTuple
+     * @return the inclusiveTuple
      */
-    public int getExclusiveTuple() {
-        return exclusiveTuple;
+    public int getInclusiveTuple() {
+        return inclusiveTuple;
     }
 
     /**
-     * @param exclusiveTuple the exclusiveTuple to set
+     * @param inclusiveTuple the inclusiveTuple to set
      */
-    public void setExclusiveTuple(int exclusiveTuple) {
-        this.exclusiveTuple = exclusiveTuple;
+    public void setInclusiveTuple(int inclusiveTuple) {
+        this.inclusiveTuple = inclusiveTuple;
     }
+
+    
     
 }

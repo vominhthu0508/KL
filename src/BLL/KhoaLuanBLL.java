@@ -45,9 +45,9 @@ public class KhoaLuanBLL {
         dal.InsertInclusiveTable(indexOfTuple, inclusiveTuple);
     }
     
-    public String GetInclusiveTupleString(int indexOfTuple) throws Exception
+    public ArrayList<InclusiveRuleDTO> GetInclusiveRulesByIndex(int indexOfTuple) throws Exception
     {
-        return dal.GetInclusiveTupleString(indexOfTuple);
+        return dal.GetInclusiveRulesByIndex(indexOfTuple);
     }
     
     public void DeleteInclusiveTable () throws Exception
