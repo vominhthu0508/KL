@@ -417,7 +417,8 @@ public class KhoaLuanForm extends javax.swing.JFrame {
         ArrayList<KhoaLuanDTO> sequenceWithGenerationRule = new ArrayList<KhoaLuanDTO>();
         KhoaLuanDTO tuple = new KhoaLuanDTO();
         tuple = Sequence.get(i - 1);
-        int z = 0;
+        int z1 = 0;
+        int z2 = 0;
         for (int t = 0; t < i; t++)
         {
             ArrayList<ExclusiveRuleDTO> exclusiveRules = new ArrayList<ExclusiveRuleDTO>();
@@ -472,31 +473,35 @@ public class KhoaLuanForm extends javax.swing.JFrame {
                     {
                         if (i != inclusiveRules.get(index).getInclusiveTuple() && i != t + 1)  //ti not in R*h'
                         {
+                            z2++;
                             KhoaLuanDTO newTuple = new KhoaLuanDTO();
                             newTuple.setIndex(Integer.valueOf(String.valueOf(Sequence.get(t).getIndex()) 
                                                                 + String.valueOf(inclusiveRules.get(index).getInclusiveTuple())));
                             newTuple.setPro(Sequence.get(t).getPro());
                             sequenceWithGenerationRule.add(newTuple);
                             Sequence.get(inclusiveRules.get(index).getInclusiveTuple() - 1).setIndex(-1);
+                            
                         }
                         else  //ti in R*h'
                         {
                             if (t + 1 < i)
                             {
+                                z1++;
                                 Sequence.get(inclusiveRules.get(index).getInclusiveTuple() - 1).setIndex(-1);
+                            }
+                            if (t + 1 == i - 1)
+                            {
+                                for(int j = 1; j <= (k - z1); j++)
+                                {
+                                    proTopk += GetProkTuple(sequenceWithGenerationRule, t, j - 1);
+                                }
+                                return tuple.getPro() * proTopk;
                             }
                         }
                     }
                 }
             }
         }
-        
-        // for rule R2
-//        int currentIndex = sequenceWithGenerationRule.size() - 1;
-//        for(int j = 1; j <= (k - z); j++)
-//        {
-//            proTopk += GetProkTuple(sequenceWithGenerationRule, currentIndex - 1, j - 1);
-//        }
         
         int currentIndex = sequenceWithGenerationRule.indexOf(tuple);
         for(int j = 1; j <= k; j++)
