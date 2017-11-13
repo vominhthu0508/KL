@@ -134,11 +134,11 @@ public class KhoaLuanForm extends javax.swing.JFrame {
     private void btnRunMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnRunMouseClicked
         ArrayList<KhoaLuanDTO> topkTuples = new ArrayList<KhoaLuanDTO>();
         ArrayList<KhoaLuanDTO> sequenceWithInclusiveRule = new ArrayList<KhoaLuanDTO>();
-        int i = 6;
+        int i = 10;
         int k = 2;
         //float result = 0;
         try {
-            SetGenerationRuleTable(dataList, i);
+            //SetGenerationRuleTable(dataList, i);
             //SetExclusiveRuleTable(dataList, i);
 //            sequenceWithExclusiveRule = GetSequenceWithExclusiveRule(dataList, Integer.valueOf(jTextField1.getText()));
 //            float result = GetTopkPro(sequenceWithExclusiveRule, 2, Integer.valueOf(jTextField1.getText()));
@@ -217,7 +217,7 @@ public class KhoaLuanForm extends javax.swing.JFrame {
                 {
                     continue;
                 }
-                if (Sequence.get(t).getId().equalsIgnoreCase(Sequence.get(t2).getId()))
+                if (Sequence.get(t).getScore() == Sequence.get(t2).getScore())
                 {
                     sumPro += Sequence.get(t2).getPro();
                     if (sumPro <= 1)
@@ -501,8 +501,7 @@ public class KhoaLuanForm extends javax.swing.JFrame {
                     }
                 }
             }
-        }
-        
+        }        
         int currentIndex = sequenceWithGenerationRule.indexOf(tuple);
         for(int j = 1; j <= k; j++)
         {
@@ -527,7 +526,7 @@ public class KhoaLuanForm extends javax.swing.JFrame {
                 Q_score.add(sequence.get(i));
                 KhoaLuanDTO minTopkTuple = Collections.min(Q_score, new Comparator<KhoaLuanDTO>(){
                     public int compare (KhoaLuanDTO tuple1, KhoaLuanDTO tuple2) {
-                        if (tuple1.getPro() > tuple2.getPro()) {
+                        if (tuple1.getPro() < tuple2.getPro()) {
                             return -1;
                         } else if (tuple1.getPro() == tuple2.getPro()) {
                             return 0;
@@ -544,17 +543,20 @@ public class KhoaLuanForm extends javax.swing.JFrame {
                 float pro = sequence.get(i).getPro(); //pro of tuple i
                 if (pro > bestPr && pro > p_prev)
                 {
-                    proTopk = GetProTopkWithGenerationRule(sequence, k, i + 1);
+                    ArrayList<KhoaLuanDTO> copiedSequence = (ArrayList<KhoaLuanDTO>)sequence.clone();
+                    
+                    Collections.copy(copiedSequence, sequence);
+                    proTopk = GetProTopkWithGenerationRule(copiedSequence, k, i + 1);
                     if (proTopk > bestPr)
                     {
                         bestPr = proTopk;
-                        KhoaLuanDTO nonDominatedTuple = sequence.get(i);
+                        KhoaLuanDTO nonDominatedTuple = copiedSequence.get(i);
                         nonDominatedTuple.setTopk(proTopk);
                         Q_pro.add(nonDominatedTuple);
                         p_prev = pro;
                     }
                 }
-                if (bestPr > pro)
+                if (bestPr >= pro)
                 {
                     break;
                 }
