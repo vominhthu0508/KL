@@ -423,7 +423,7 @@ public class KhoaLuanForm extends javax.swing.JFrame {
         {
             ArrayList<ExclusiveRuleDTO> exclusiveRules = new ArrayList<ExclusiveRuleDTO>();
             ArrayList<InclusiveRuleDTO> inclusiveRules = new ArrayList<InclusiveRuleDTO>();
-            if (Sequence.get(t).getIndex() == -1)
+            if (Sequence.get(t).getStatus()== -1)
             {
                 continue;
             }
@@ -459,7 +459,7 @@ public class KhoaLuanForm extends javax.swing.JFrame {
                                                                 + String.valueOf(exclusiveRules.get(e).getExclusiveTuple())));
                             newTuple.setPro(sumPro);
                             sequenceWithGenerationRule.add(newTuple);
-                            Sequence.get(exclusiveRules.get(e).getExclusiveTuple() - 1).setIndex(-1);
+                            Sequence.get(exclusiveRules.get(e).getExclusiveTuple() - 1).setStatus(-1);
                         }
                         else  //ti in RhLeft
                         {
@@ -479,7 +479,7 @@ public class KhoaLuanForm extends javax.swing.JFrame {
                                                                 + String.valueOf(inclusiveRules.get(index).getInclusiveTuple())));
                             newTuple.setPro(Sequence.get(t).getPro());
                             sequenceWithGenerationRule.add(newTuple);
-                            Sequence.get(inclusiveRules.get(index).getInclusiveTuple() - 1).setIndex(-1);
+                            Sequence.get(inclusiveRules.get(index).getInclusiveTuple() - 1).setStatus(-1);
                             
                         }
                         else  //ti in R*h'
@@ -487,7 +487,7 @@ public class KhoaLuanForm extends javax.swing.JFrame {
                             if (t + 1 < i)
                             {
                                 z1++;
-                                Sequence.get(inclusiveRules.get(index).getInclusiveTuple() - 1).setIndex(-1);
+                                Sequence.get(inclusiveRules.get(index).getInclusiveTuple() - 1).setStatus(-1);
                             }
                             if (t + 1 == i - 1)
                             {
@@ -543,20 +543,17 @@ public class KhoaLuanForm extends javax.swing.JFrame {
                 float pro = sequence.get(i).getPro(); //pro of tuple i
                 if (pro > bestPr && pro > p_prev)
                 {
-                    ArrayList<KhoaLuanDTO> copiedSequence = (ArrayList<KhoaLuanDTO>)sequence.clone();
-                    
-                    Collections.copy(copiedSequence, sequence);
-                    proTopk = GetProTopkWithGenerationRule(copiedSequence, k, i + 1);
+                    proTopk = GetProTopkWithGenerationRule(sequence, k, i + 1);
                     if (proTopk > bestPr)
                     {
                         bestPr = proTopk;
-                        KhoaLuanDTO nonDominatedTuple = copiedSequence.get(i);
+                        KhoaLuanDTO nonDominatedTuple = sequence.get(i);
                         nonDominatedTuple.setTopk(proTopk);
                         Q_pro.add(nonDominatedTuple);
                         p_prev = pro;
                     }
                 }
-                if (bestPr >= pro)
+                else
                 {
                     break;
                 }

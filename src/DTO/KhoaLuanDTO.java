@@ -17,6 +17,7 @@ public class KhoaLuanDTO {
     private float score;
     private float pro;
     private float topk;
+    private int status;
     public KhoaLuanDTO (int index, float score, float pro, float topk){
         this.index = index;
         this.score = score;
@@ -95,4 +96,20 @@ public class KhoaLuanDTO {
     public void setId(String Id) {
         this.Id = Id;
     }
+
+    /**
+     * @return the status
+     */
+    public int getStatus() {
+        return status;
+    }
+
+    /**
+     * @param status the status to set
+     */
+    public void setStatus(int status) {
+        this.status = status;
+    }
+    
+    
 }
