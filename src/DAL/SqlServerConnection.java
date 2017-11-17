@@ -9,28 +9,31 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import com.microsoft.sqlserver.jdbc.*;
 /**
  *
  * @author DLT
  */
-public class SqliteConnection {
+public class SqlServerConnection {
     Connection connect = null;
     Statement statement = null;
     ResultSet result =null;  
-    String databaseAddress = null;
+    String databaseName = null;
     String URL = null;
-    public SqliteConnection (String address){
-        databaseAddress = address;
+    public SqlServerConnection (String databaseName){
+        this.databaseName = databaseName;
     }
     
     public Connection getConnect() throws Exception{
-        if(this.connect == null){
-            URL =  "jdbc:sqlite:" + this.databaseAddress;
-            try{
-                this.connect = DriverManager.getConnection(URL);
+        try{
+            SQLServerDataSource ds = new SQLServerDataSource();
+            ds.setIntegratedSecurity(true);
+            ds.setServerName("localhost");
+            //ds.setPortNumber(1433); 
+            ds.setDatabaseName("KhoaLuanTopk");
+            connect = ds.getConnection();
             }catch(java.sql.SQLException e){
                 throw new Exception("Không thể kết nối đến database");
-            }
         }
         return this.connect;
     }

@@ -10,7 +10,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.HashMap;
-
 /**
  *
  * @author CiOne+com+vn
@@ -18,7 +17,7 @@ import java.util.HashMap;
 public class MyConnectUnit {
 
     //Biến kết nối cơ bản
-    private SqliteConnection connect;
+    private SqlServerConnection connect;
 
     // Hàm hỗ trợ Select CSDL
     // SELECT * FORM TableName WHERE Condition ORDER BY OrderBy;
@@ -150,6 +149,6 @@ public class MyConnectUnit {
     }
     // Hàm khởi tạo với các thông số kết nối DataBase Server.
     public MyConnectUnit(String address) {
-            this.connect = new SqliteConnection(address);
+            this.connect = new SqlServerConnection(address);
     }
 }

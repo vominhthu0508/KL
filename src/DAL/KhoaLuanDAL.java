@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  */
 public class KhoaLuanDAL {
     //MyConnectUnit connect = new MyConnectUnit("C:/Users/DLT/Documents/NetBeansProjects/KhoaLuan/src/Database/database_khoaluan.db");
-    MyConnectUnit connect = new MyConnectUnit("C:/Users/DLT/Documents/NetBeansProjects/KhoaLuan/src/Database/sample.db");
+    MyConnectUnit connect = new MyConnectUnit("KhoaLuanTopk");
     public ArrayList<KhoaLuanDTO> getData(ResultSet rs) throws SQLException, Exception
     {
         ArrayList<KhoaLuanDTO> dataList = new ArrayList<KhoaLuanDTO>();

@@ -27,13 +27,11 @@ public class KhoaLuanForm extends javax.swing.JFrame {
     ArrayList<KhoaLuanDTO> dataList = new ArrayList<KhoaLuanDTO>();
     
     public KhoaLuanForm() throws Exception {
+        ArrayList<KhoaLuanDTO> sampleDataList = new ArrayList<KhoaLuanDTO>();
         initComponents();
         
         dataList = bll.getAllData();
-        //bll.DeleteExclusiveTable();
-        //bll.DeleteInclusiveTable();
         //Collections.sort(dataList, new SortByRoll());
-        //dataList = GetRankedSequence(dataList, -1);
         ShowTable(dataList);
     }
     
@@ -134,28 +132,14 @@ public class KhoaLuanForm extends javax.swing.JFrame {
     private void btnRunMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnRunMouseClicked
         ArrayList<KhoaLuanDTO> topkTuples = new ArrayList<KhoaLuanDTO>();
         ArrayList<KhoaLuanDTO> sequenceWithInclusiveRule = new ArrayList<KhoaLuanDTO>();
-        int i = 6;
-        int k = 2;
-        float result = 0;
         try {
-            SetGenerationRuleTable(dataList, i);
-            //SetExclusiveRuleTable(dataList, i);
-//            sequenceWithExclusiveRule = GetSequenceWithExclusiveRule(dataList, Integer.valueOf(jTextField1.getText()));
-//            float result = GetTopkPro(sequenceWithExclusiveRule, 2, Integer.valueOf(jTextField1.getText()));
-//            jTextField1.setText(String.valueOf(result));
-            //SetInclusiveRuleTable(dataList, i);
-            //sequenceWithInclusiveRule = GetSequenceWithInclusiveRule(dataList, 6);
-            //topkTuples = GetSequenceTopkBestPro(dataList, Integer.valueOf(jTextField1.getText()));
-            //result = GetTopkPro(dataList, 4, 6);
-            result = GetProTopkWithGenerationRule(dataList, k, i);
-            
+            topkTuples = GetSequenceTopkBestPro(dataList, Integer.valueOf(jTextField1.getText()));            
         } catch (Exception ex) {
             Logger.getLogger(KhoaLuanForm.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-//        Result result= new Result();
-//        result.setVisible(true);
-//        result.ShowResult(topkTuples);
+        Result result= new Result();
+        result.setVisible(true);
+        result.ShowResult(topkTuples);
     }//GEN-LAST:event_btnRunMouseClicked
 
     //Theorem 1
@@ -202,213 +186,6 @@ public class KhoaLuanForm extends javax.swing.JFrame {
             proTopk += GetProkTuple(Sequence, currentIndex - 1, j - 1);
         }
         return pro * proTopk;
-    }
-      
-    private void SetGenerationRuleTable(ArrayList<KhoaLuanDTO> Sequence, int i) throws Exception
-    {
-        for (int t = 0; t < i - 1; t++)
-        {
-            float sumPro = Sequence.get(t).getPro();
-            ArrayList<KhoaLuanDTO> LeftSequence = new ArrayList<KhoaLuanDTO>();
-            ArrayList<KhoaLuanDTO> inclusiveSequence = new ArrayList<KhoaLuanDTO>();
-            for (int t2 = t + 1; t2 < i; t2++)
-            {
-                if (Sequence.get(t2).getIndex() == -1)
-                {
-                    continue;
-                }
-                if (Sequence.get(t).getScore() == Sequence.get(t2).getScore())
-                {
-                    sumPro += Sequence.get(t2).getPro();
-                    if (sumPro <= 1)
-                    {
-                        LeftSequence.add(Sequence.get(t2));
-                    }
-                }
-                if (Sequence.get(t).getPro() == Sequence.get(t2).getPro())
-                {
-                    inclusiveSequence.add(Sequence.get(t2));
-                }
-            }
-            if (LeftSequence.size() > 0)
-            {
-                for (int index = 0; index < LeftSequence.size(); index++)
-                {
-                    bll.InsertExclusiveTable(Sequence.get(t).getIndex(), LeftSequence.get(index).getIndex());
-                    Sequence.get(LeftSequence.get(index).getIndex() - 1).setIndex(-1);
-                }
-            }
-            if (inclusiveSequence.size() > 0)
-            {
-                for (int index = 0; index < inclusiveSequence.size(); index++)
-                {
-                    bll.InsertInclusiveTable(Sequence.get(t).getIndex(), inclusiveSequence.get(index).getIndex());
-                    Sequence.get(inclusiveSequence.get(index).getIndex() - 1).setIndex(-1);
-                }
-            }
-        }
-    }
-    
-    private void SetExclusiveRuleTable(ArrayList<KhoaLuanDTO> Sequence, int i) throws Exception
-    {
-        for (int t = 0; t < Sequence.size() - 1; t++)
-        {
-            float sumPro = Sequence.get(t).getPro();
-            ArrayList<KhoaLuanDTO> LeftSequence = new ArrayList<KhoaLuanDTO>();
-            for (int t2 = t + 1; t2 < Sequence.size(); t2++)
-            {
-                if (Sequence.get(t2).getIndex() == -1)
-                {
-                    continue;
-                }
-                if (Sequence.get(t).getId().equalsIgnoreCase(Sequence.get(t2).getId()))
-                {
-                    if (Sequence.get(t2).getIndex() <= i)
-                    {
-                        sumPro += Sequence.get(t2).getPro();
-                        if (sumPro <= 1)
-                        {
-                            LeftSequence.add(Sequence.get(t2));
-                        }
-                    }
-                }
-            }
-            if (LeftSequence.size() > 0)
-            {
-                for (int index = 0; index < LeftSequence.size(); index++)
-                {
-                    bll.InsertExclusiveTable(Sequence.get(t).getIndex(), LeftSequence.get(index).getIndex());
-                    Sequence.get(LeftSequence.get(index).getIndex() - 1).setIndex(-1);
-                }
-            }
-        }
-    }
-    
-    private ArrayList<KhoaLuanDTO> GetSequenceWithExclusiveRule(ArrayList<KhoaLuanDTO> Sequence, int i) throws Exception
-    {
-        ArrayList<KhoaLuanDTO> sequenceWithExclusiveRule = new ArrayList<KhoaLuanDTO>();
-        for (int t = 0; t < i; t++)
-        {
-            if (Sequence.get(t).getIndex() == -1)
-            {
-                continue;
-            }
-            ArrayList<ExclusiveRuleDTO> exclusiveRules = new ArrayList<ExclusiveRuleDTO>();
-            exclusiveRules = bll.GetExclusiveRulesByIndex(t + 1);
-            if(exclusiveRules.size() == 0)
-            {
-                sequenceWithExclusiveRule.add(Sequence.get(t));
-                continue;
-            }
-            else
-            {
-                for (int e = 0; e < exclusiveRules.size(); e++)
-                {
-                    if (t + 1 <= i && i < exclusiveRules.get(e).getExclusiveTuple())
-                    {
-                        sequenceWithExclusiveRule.add(Sequence.get(t));
-                        continue;
-                    }
-                    if (t + 1 == exclusiveRules.get(e).getExclusiveTuple())
-                    {
-                        continue;
-                    }
-                    
-                    if (i != exclusiveRules.get(e).getExclusiveTuple() && i != t + 1) //ti not in RhLeft
-                    {
-                        float sumPro = Sequence.get(t).getPro() 
-                                        + Sequence.get(exclusiveRules.get(e).getExclusiveTuple() - 1).getPro();
-                        KhoaLuanDTO newTuple = new KhoaLuanDTO();
-                        newTuple.setIndex(Integer.valueOf(String.valueOf(Sequence.get(t).getIndex()) 
-                                                            + String.valueOf(exclusiveRules.get(e).getExclusiveTuple())));
-                        newTuple.setPro(sumPro);
-                        sequenceWithExclusiveRule.add(newTuple);
-                        Sequence.get(exclusiveRules.get(e).getExclusiveTuple() - 1).setIndex(-1);
-                    }
-                    else  //ti in RhLeft
-                    {
-                        Sequence.get(t).setIndex(-1);
-                    }
-                }
-            }
-        }
-        return sequenceWithExclusiveRule;
-    }
-    
-    private void SetInclusiveRuleTable(ArrayList<KhoaLuanDTO> Sequence, int i) throws Exception
-    {
-        for (int t = 0; t < Sequence.size() - 1; t++)
-        {
-            ArrayList<KhoaLuanDTO> inclusiveSequence = new ArrayList<KhoaLuanDTO>();
-            for (int t2 = t + 1; t2 < Sequence.size(); t2++)
-            {
-                if (Sequence.get(t2).getIndex() == -1)
-                {
-                    continue;
-                }
-                if (Sequence.get(t).getPro() == Sequence.get(t2).getPro())
-                {
-                    if (Sequence.get(t2).getIndex() <= i)
-                    {
-                        inclusiveSequence.add(Sequence.get(t2));
-                    }
-                }
-            }
-            if (inclusiveSequence.size() > 0)
-            {
-                for (int index = 0; index < inclusiveSequence.size(); index++)
-                {
-                    bll.InsertInclusiveTable(Sequence.get(t).getIndex(), inclusiveSequence.get(index).getIndex());
-                    Sequence.get(inclusiveSequence.get(index).getIndex() - 1).setIndex(-1);
-                }
-            }
-        }
-    }
-    
-    private ArrayList<KhoaLuanDTO> GetSequenceWithInclusiveRule(ArrayList<KhoaLuanDTO> Sequence, int i) throws Exception
-    {
-        ArrayList<KhoaLuanDTO> sequenceWithInclusiveRule = new ArrayList<KhoaLuanDTO>();
-        for (int t = 0; t < i; t++)
-        {
-            if (t + 1 == i)
-            {
-                break;
-            }
-            if (Sequence.get(t).getIndex() == -1)
-            {
-                continue;
-            }
-            ArrayList<InclusiveRuleDTO> inclusiveRules = new ArrayList<InclusiveRuleDTO>();
-            inclusiveRules = bll.GetInclusiveRulesByIndex(t + 1);
-            if(inclusiveRules.size() == 0)
-            {
-                sequenceWithInclusiveRule.add(Sequence.get(t));
-                continue;
-            }
-            else
-            {
-                for (int index = 0; index < inclusiveRules.size(); index++)
-                {
-                    if (i != inclusiveRules.get(index).getInclusiveTuple() && i != t + 1)  //ti not in R*h'
-                    {
-                        KhoaLuanDTO newTuple = new KhoaLuanDTO();
-                        newTuple.setIndex(Integer.valueOf(String.valueOf(Sequence.get(t).getIndex()) 
-                                                            + String.valueOf(inclusiveRules.get(index).getInclusiveTuple())));
-                        newTuple.setPro(Sequence.get(t).getPro());
-                        sequenceWithInclusiveRule.add(newTuple);
-                        Sequence.get(inclusiveRules.get(index).getInclusiveTuple() - 1).setIndex(-1);
-                    }
-                    else  //ti in R*h'
-                    {
-                        if (t + 1 < i)
-                        {
-                            Sequence.get(inclusiveRules.get(index).getInclusiveTuple() - 1).setIndex(-1);
-                        }
-                    }
-                }
-            }
-        }
-        return sequenceWithInclusiveRule;
     }
     
     private float GetProTopkWithGenerationRule(ArrayList<KhoaLuanDTO> Sequence, int k, int i) throws Exception
