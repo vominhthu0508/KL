@@ -27,9 +27,7 @@ public class KhoaLuanForm extends javax.swing.JFrame {
     ArrayList<KhoaLuanDTO> dataList = new ArrayList<KhoaLuanDTO>();
     
     public KhoaLuanForm() throws Exception {
-        ArrayList<KhoaLuanDTO> sampleDataList = new ArrayList<KhoaLuanDTO>();
-        initComponents();
-        
+        initComponents();        
         dataList = bll.getAllData();
         //Collections.sort(dataList, new SortByRoll());
         ShowTable(dataList);
@@ -131,7 +129,6 @@ public class KhoaLuanForm extends javax.swing.JFrame {
 
     private void btnRunMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnRunMouseClicked
         ArrayList<KhoaLuanDTO> topkTuples = new ArrayList<KhoaLuanDTO>();
-        ArrayList<KhoaLuanDTO> sequenceWithInclusiveRule = new ArrayList<KhoaLuanDTO>();
         try {
             topkTuples = GetSequenceTopkBestPro(dataList, Integer.valueOf(jTextField1.getText()));            
         } catch (Exception ex) {

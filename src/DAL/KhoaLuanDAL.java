@@ -39,7 +39,7 @@ public class KhoaLuanDAL {
     
     public ArrayList<KhoaLuanDTO> getAllData() throws Exception
     {
-        ResultSet rs = connect.Select("Top_k");
+        ResultSet rs = connect.Select("ProData");
         return getData(rs);
     }
     
@@ -47,7 +47,7 @@ public class KhoaLuanDAL {
     {
         HashMap<String, Object> map = new HashMap<String,Object>();
         map.put("indexOfTuple", index);
-        connect.Update("Top_k", map, "[index] = "+ index);
+        connect.Update("ProData", map, "[index] = "+ index);
         connect.Close();
     }
     
