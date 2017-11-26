@@ -20,9 +20,9 @@ public class KhoaLuanBLL {
         return dal.getAllData();
     }
     
-    public void UpdateIndexOfTuple(int index) throws Exception
+    public void UpdateIndexOfTuple(KhoaLuanDTO tuple) throws Exception
     {
-        dal.UpdateIndexOfTuple(index);
+        dal.UpdateIndexOfTuple(tuple);
     }
     
     public void InsertExclusiveTable(int indexOfTuple, int exclusiveTuple) throws Exception

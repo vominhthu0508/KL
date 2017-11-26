@@ -13,13 +13,14 @@ import java.util.*;
  */
 public class KhoaLuanDTO {
     private int index;
-    private String Id;
-    private float score;
+    private int indexOfTuple;
+    private String productId;
+    private int score;
     private float pro;
     private float topk;
     private int status;
-    public KhoaLuanDTO (int index, float score, float pro, float topk){
-        this.index = index;
+    public KhoaLuanDTO (int indexOfTuple, int score, float pro, float topk){
+        this.indexOfTuple = indexOfTuple;
         this.score = score;
         this.pro = pro;
         this.topk = topk;
@@ -27,17 +28,60 @@ public class KhoaLuanDTO {
     public KhoaLuanDTO(){
         
     }
+
+    /**
+     * @return the index
+     */
+    public int getIndex() {
+        return index;
+    }
+
+    /**
+     * @param index the index to set
+     */
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    /**
+     * @return the indexOfTuple
+     */
+    public int getIndexOfTuple() {
+        return indexOfTuple;
+    }
+
+    /**
+     * @param indexOfTuple the indexOfTuple to set
+     */
+    public void setIndexOfTuple(int indexOfTuple) {
+        this.indexOfTuple = indexOfTuple;
+    }
+
+    /**
+     * @return the productId
+     */
+    public String getProductId() {
+        return productId;
+    }
+
+    /**
+     * @param productId the productId to set
+     */
+    public void setProductId(String productId) {
+        this.productId = productId;
+    }
+
     /**
      * @return the score
      */
-    public float getScore() {
+    public int getScore() {
         return score;
     }
 
     /**
      * @param score the score to set
      */
-    public void setScore(float score) {
+    public void setScore(int score) {
         this.score = score;
     }
 
@@ -70,34 +114,6 @@ public class KhoaLuanDTO {
     }
 
     /**
-     * @return the index
-     */
-    public int getIndex() {
-        return index;
-    }
-
-    /**
-     * @param index the index to set
-     */
-    public void setIndex(int index) {
-        this.index = index;
-    } 
-
-    /**
-     * @return the Id
-     */
-    public String getId() {
-        return Id;
-    }
-
-    /**
-     * @param Id the Id to set
-     */
-    public void setId(String Id) {
-        this.Id = Id;
-    }
-
-    /**
      * @return the status
      */
     public int getStatus() {
@@ -110,6 +126,5 @@ public class KhoaLuanDTO {
     public void setStatus(int status) {
         this.status = status;
     }
-    
     
 }
