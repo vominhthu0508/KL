@@ -27,9 +27,11 @@ public class KhoaLuanForm extends javax.swing.JFrame {
     ArrayList<KhoaLuanDTO> dataList = new ArrayList<KhoaLuanDTO>();
     
     public KhoaLuanForm() throws Exception {
+        ArrayList<KhoaLuanDTO> sampleData = new ArrayList<KhoaLuanDTO>();
         initComponents();        
         dataList = bll.getAllData();
-        //Collections.sort(dataList, new SortByRoll());
+        Collections.sort(dataList, new SortByRoll());
+        //dataList = GetRankedSequence(sampleData, -1);
         ShowTable(dataList);
     }
     
@@ -44,9 +46,9 @@ public class KhoaLuanForm extends javax.swing.JFrame {
         Vector vector = new Vector();
         for(KhoaLuanDTO data : dataList)
         {
-            Vector row = new Vector();            
-            row.add(data.getIndex());
-            row.add(data.getId());
+            Vector row = new Vector(); 
+            row.add(data.getIndexOfTuple());
+            row.add(data.getProductId());
             row.add(data.getScore());
             row.add(data.getPro());
             vector.add(row);
@@ -99,29 +101,31 @@ public class KhoaLuanForm extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(15, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(15, 15, 15)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGap(10, 10, 10)
                         .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(btnRun))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 417, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 417, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnRun)
-                    .addComponent(jLabel1))
+                .addGap(11, 11, 11)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(4, 4, 4)
+                        .addComponent(jLabel1))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(1, 1, 1)
+                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnRun))
                 .addGap(37, 37, 37)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -129,14 +133,17 @@ public class KhoaLuanForm extends javax.swing.JFrame {
 
     private void btnRunMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnRunMouseClicked
         ArrayList<KhoaLuanDTO> topkTuples = new ArrayList<KhoaLuanDTO>();
+        ArrayList<KhoaLuanDTO> PTkTuples = new ArrayList<KhoaLuanDTO>();
         try {
-            topkTuples = GetSequenceTopkBestPro(dataList, Integer.valueOf(jTextField1.getText()));            
+            topkTuples = GetSequenceTopkBestPro(dataList, Integer.valueOf(jTextField1.getText()));
+            //PTkTuples = GetSequencePTk(dataList, Integer.valueOf(jTextField1.getText()), 0.031f);
         } catch (Exception ex) {
             Logger.getLogger(KhoaLuanForm.class.getName()).log(Level.SEVERE, null, ex);
         }
         Result result= new Result();
         result.setVisible(true);
         result.ShowResult(topkTuples);
+        //result.ShowResult(PTkTuples);
     }//GEN-LAST:event_btnRunMouseClicked
 
     //Theorem 1
@@ -212,57 +219,66 @@ public class KhoaLuanForm extends javax.swing.JFrame {
                 if (exclusiveRules.size() != 0)
                 {
                     for (int e = 0; e < exclusiveRules.size(); e++)
-                    {
-                        if (t + 1 <= i && i < exclusiveRules.get(e).getExclusiveTuple())
+                    { 
+                        if (exclusiveRules.get(e).getExclusiveTuple() <= i)
+                        {
+                            if (t + 1 == exclusiveRules.get(e).getExclusiveTuple())
+                            {
+                                continue;
+                            }
+
+                            if (i != exclusiveRules.get(e).getExclusiveTuple() && i != t + 1) //ti not in RhLeft
+                            {
+                                float sumPro = Sequence.get(t).getPro() 
+                                                + Sequence.get(exclusiveRules.get(e).getExclusiveTuple() - 1).getPro();
+                                KhoaLuanDTO newTuple = new KhoaLuanDTO();
+                                newTuple.setIndex(Integer.valueOf(String.valueOf(Sequence.get(t).getIndex()) 
+                                                                    + String.valueOf(exclusiveRules.get(e).getExclusiveTuple())));
+                                newTuple.setPro(sumPro);
+                                sequenceWithGenerationRule.add(newTuple);
+                                Sequence.get(exclusiveRules.get(e).getExclusiveTuple() - 1).setStatus(-1);
+                            }
+                            else  //ti in RhLeft
+                            {
+                                Sequence.get(t).setStatus(-1);
+                            }
+                        }
+                        else
                         {
                             sequenceWithGenerationRule.add(Sequence.get(t));
-                            continue;
-                        }
-                        if (t + 1 == exclusiveRules.get(e).getExclusiveTuple())
-                        {
-                            continue;
-                        }
-
-                        if (i != exclusiveRules.get(e).getExclusiveTuple() && i != t + 1) //ti not in RhLeft
-                        {
-                            float sumPro = Sequence.get(t).getPro() 
-                                            + Sequence.get(exclusiveRules.get(e).getExclusiveTuple() - 1).getPro();
-                            KhoaLuanDTO newTuple = new KhoaLuanDTO();
-                            newTuple.setIndex(Integer.valueOf(String.valueOf(Sequence.get(t).getIndex()) 
-                                                                + String.valueOf(exclusiveRules.get(e).getExclusiveTuple())));
-                            newTuple.setPro(sumPro);
-                            sequenceWithGenerationRule.add(newTuple);
-                            Sequence.get(exclusiveRules.get(e).getExclusiveTuple() - 1).setStatus(-1);
-                        }
-                        else  //ti in RhLeft
-                        {
-                            Sequence.get(t).setIndex(-1);
-                        }
+                        }                                 
                     }
                 }
                 if (inclusiveRules.size() != 0)
                 {
                     for (int index = 0; index < inclusiveRules.size(); index++)
                     {
-                        if (i != inclusiveRules.get(index).getInclusiveTuple() && i != t + 1)  //ti not in R*h'
+                        if (inclusiveRules.get(index).getInclusiveTuple() <= i)
                         {
-                            z++;
-                            KhoaLuanDTO newTuple = new KhoaLuanDTO();
-                            newTuple.setIndex(Integer.valueOf(String.valueOf(Sequence.get(t).getIndex()) 
-                                                                + String.valueOf(inclusiveRules.get(index).getInclusiveTuple())));
-                            newTuple.setPro(Sequence.get(t).getPro());
-                            sequenceWithGenerationRule.add(newTuple);
-                            Sequence.get(inclusiveRules.get(index).getInclusiveTuple() - 1).setStatus(-1);
-                            
-                        }
-                        else  //ti in R*h'
-                        {
-                            if (t + 1 < i)
+                            if (i != inclusiveRules.get(index).getInclusiveTuple() && i != t + 1)  //ti not in R*h'
                             {
                                 z++;
+                                KhoaLuanDTO newTuple = new KhoaLuanDTO();
+                                newTuple.setIndex(Integer.valueOf(String.valueOf(Sequence.get(t).getIndex()) 
+                                                                    + String.valueOf(inclusiveRules.get(index).getInclusiveTuple())));
+                                newTuple.setPro(Sequence.get(t).getPro());
+                                sequenceWithGenerationRule.add(newTuple);
                                 Sequence.get(inclusiveRules.get(index).getInclusiveTuple() - 1).setStatus(-1);
+
+                            }
+                            else  //ti in R*h'
+                            {
+                                if (t + 1 < i)
+                                {
+                                    z++;
+                                    Sequence.get(inclusiveRules.get(index).getInclusiveTuple() - 1).setStatus(-1);
+                                }
                             }
                         }
+                        else
+                        {
+                            sequenceWithGenerationRule.add(Sequence.get(t));
+                        }  
                     }
                 }
             }
@@ -319,14 +335,11 @@ public class KhoaLuanForm extends javax.swing.JFrame {
                 float pro = sequence.get(i).getPro(); //pro of tuple i
                 if (pro > bestPr && pro > p_prev)
                 {
-                    ArrayList<KhoaLuanDTO> copiedSequence = (ArrayList<KhoaLuanDTO>)sequence.clone();
-                    
-                    Collections.copy(copiedSequence, sequence);
-                    proTopk = GetProTopkWithGenerationRule(copiedSequence, k, i + 1);
+                    proTopk = GetProTopkWithGenerationRule(sequence, k, i + 1);
                     if (proTopk > bestPr)
                     {
                         bestPr = proTopk;
-                        KhoaLuanDTO nonDominatedTuple = copiedSequence.get(i);
+                        KhoaLuanDTO nonDominatedTuple = sequence.get(i);
                         nonDominatedTuple.setTopk(proTopk);
                         Q_pro.add(nonDominatedTuple);
                         p_prev = pro;
@@ -357,7 +370,7 @@ public class KhoaLuanForm extends javax.swing.JFrame {
         return tuple;
     }
     
-    private ArrayList GetRankedSequence(ArrayList<KhoaLuanDTO> dataList, int i) throws Exception
+    private ArrayList<KhoaLuanDTO> GetRankedSequence(ArrayList<KhoaLuanDTO> dataList, int i) throws Exception
     {
         ArrayList<KhoaLuanDTO> rankedSequence = new ArrayList<KhoaLuanDTO>();
         if (i == -1) 
@@ -368,11 +381,45 @@ public class KhoaLuanForm extends javax.swing.JFrame {
         {
             KhoaLuanDTO tuple = new KhoaLuanDTO();
             tuple = dataList.get(t - 1);
-            tuple.setIndex(t); 
-            bll.UpdateIndexOfTuple(t);
+            tuple.setIndexOfTuple(t); 
+            bll.UpdateIndexOfTuple(tuple);
             rankedSequence.add(tuple);
         }
         return rankedSequence;
+    }
+    
+    private ArrayList<KhoaLuanDTO> GetSequencePTk (ArrayList<KhoaLuanDTO> sequence, int k, float thresholdPro) throws Exception
+    {
+        ArrayList<KhoaLuanDTO> QtopSet = new ArrayList<KhoaLuanDTO>();
+        ArrayList<KhoaLuanDTO> Q_pro = new ArrayList<KhoaLuanDTO>();
+        ArrayList<KhoaLuanDTO> Q_score = new ArrayList<KhoaLuanDTO>();
+        float bestPr = 0;
+        float proTopk = 0;
+        float p_prev = 0;
+        for (int i = 0; i < sequence.size(); i++)
+        {
+            if (i + 1 <= k)
+            {
+                sequence.get(i).setTopk(sequence.get(i).getPro());
+                Q_score.add(sequence.get(i));
+            }
+            else
+            {
+                proTopk = GetProTopkWithGenerationRule(sequence, k, i + 1);
+                if (proTopk >= thresholdPro)
+                {
+                    sequence.get(i).setTopk(proTopk);
+                    Q_pro.add(sequence.get(i));
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }    
+        QtopSet.addAll(Q_score);
+        QtopSet.addAll(Q_pro);
+        return QtopSet;
     }
 
     /**
@@ -400,6 +447,8 @@ public class KhoaLuanForm extends javax.swing.JFrame {
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(KhoaLuanForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
         //</editor-fold>
         //</editor-fold>
 

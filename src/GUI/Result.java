@@ -35,8 +35,8 @@ public class Result extends javax.swing.JFrame {
         for(KhoaLuanDTO data : topkTuples)
         {
             Vector row = new Vector();            
-            row.add(data.getIndex());
-            row.add(data.getId());
+            row.add(data.getIndexOfTuple());
+            row.add(data.getProductId());
             row.add(data.getScore());
             row.add(data.getPro());
             row.add(data.getTopk());
@@ -127,6 +127,8 @@ public class Result extends javax.swing.JFrame {
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(Result.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
         //</editor-fold>
         //</editor-fold>
 

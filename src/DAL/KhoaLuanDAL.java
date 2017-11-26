@@ -20,16 +20,17 @@ import java.util.logging.Logger;
  */
 public class KhoaLuanDAL {
     //MyConnectUnit connect = new MyConnectUnit("C:/Users/DLT/Documents/NetBeansProjects/KhoaLuan/src/Database/database_khoaluan.db");
-    MyConnectUnit connect = new MyConnectUnit("KhoaLuanTopk");
+    MyConnectUnit connect = new MyConnectUnit("KhoaLuan");
     public ArrayList<KhoaLuanDTO> getData(ResultSet rs) throws SQLException, Exception
     {
         ArrayList<KhoaLuanDTO> dataList = new ArrayList<KhoaLuanDTO>();
         while(rs.next())
         {
             KhoaLuanDTO data= new KhoaLuanDTO();
-            data.setIndex(rs.getInt("indexOfTuple"));
-            data.setId(rs.getString("productID"));
-            data.setScore(rs.getFloat("score"));
+            data.setIndex(rs.getInt("index"));
+            data.setIndexOfTuple(rs.getInt("indexOfTuple"));
+            data.setProductId(rs.getString("productID"));
+            data.setScore(rs.getInt("score"));
             data.setPro(rs.getFloat("pro"));
             dataList.add(data);
         }
@@ -43,11 +44,11 @@ public class KhoaLuanDAL {
         return getData(rs);
     }
     
-    public void UpdateIndexOfTuple(int index)throws Exception
+    public void UpdateIndexOfTuple(KhoaLuanDTO tuple)throws Exception
     {
         HashMap<String, Object> map = new HashMap<String,Object>();
-        map.put("indexOfTuple", index);
-        connect.Update("ProData", map, "[index] = "+ index);
+        map.put("indexOfTuple", tuple.getIndexOfTuple());
+        connect.Update("ProData", map, "[index] = " + tuple.getIndex());
         connect.Close();
     }
     
