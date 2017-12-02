@@ -30,7 +30,7 @@ public class SqlServerConnection {
             ds.setIntegratedSecurity(true);
             ds.setServerName("localhost");
             //ds.setPortNumber(1433); 
-            ds.setDatabaseName("KhoaLuan");
+            ds.setDatabaseName(databaseName);
             connect = ds.getConnection();
             }catch(java.sql.SQLException e){
                 throw new Exception("Không thể kết nối đến database");

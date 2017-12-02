@@ -148,7 +148,7 @@ public class MyConnectUnit {
         this.connect.getConnect();
     }
     // Hàm khởi tạo với các thông số kết nối DataBase Server.
-    public MyConnectUnit(String address) {
-            this.connect = new SqlServerConnection(address);
+    public MyConnectUnit(String databaseName) {
+        this.connect = new SqlServerConnection(databaseName);
     }
 }

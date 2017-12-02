@@ -22,50 +22,62 @@ public class MainFunction {
     KhoaLuanBLL bll = new KhoaLuanBLL();
     
     //Theorem 1
-    public float GetProkTuple(ArrayList<KhoaLuanDTO> Sequence, int i, int j) //pro of k tuples appearing in the sequence, i index of tuple
+    public float GetProkTuple(ArrayList<KhoaLuanDTO> Sequence, int index, int j, int z) //pro of k tuples appearing in the sequence
     {
         float prokTuple = 1; //pro of k tuple in the sequence   
-        if (i + 1 == 0 && j == 0)
+        if (index < 0 && j == 0)
         {
             return 1;
         }
-        if (i + 1 == 0)
+        if (index < 0)
         {
             return 0;
         }
-        float pro = Sequence.get(i).getPro();
-        if (i + 1 == 1 && j == 1)
+        KhoaLuanDTO tuple = new KhoaLuanDTO();
+        tuple = Sequence.get(index);
+        if (Sequence.size() == 1 && j == 1)
         {
-            return pro;
+            return tuple.getPro();
         }       
-        if (i + 1 > 0 && j == 0)
+        if (index >= 0 && j == 0 && z == 0)
         {
             float prok = 0.0f; //pro of k not appearing in the Sequence
-            for (int k = 0; k <= i; k++) //k=0 same j=1
+            for (int k = 0; k <= index; k++) //k=0 same j=1
             {
                 prok = (1 - Sequence.get(k).getPro()); 
                 prokTuple *= prok;
             }
-             return prokTuple;
+            return prokTuple;
         }
-        prokTuple = GetProkTuple(Sequence, i - 1, j - 1) * pro + GetProkTuple(Sequence, i - 1, j) * (1 - pro);
+        if (z > 0)
+        {
+            if (j < z)
+            {
+                return GetProkTuple(Sequence, index - 1, j, z - 2) * (1 - tuple.getPro());
+            }
+            else
+            {
+                return GetProkTuple(Sequence, index - 1, j - z, z - 2) * tuple.getPro() + GetProkTuple(Sequence, index - 1, j, z - 2) * (1 - tuple.getPro());
+            }
+        }
+        prokTuple = GetProkTuple(Sequence, index - 1, j - 1, z) * tuple.getPro() + GetProkTuple(Sequence, index - 1, j, z) * (1 - tuple.getPro());
         return prokTuple;
     }
     
     //Theorem 3
-    public float GetTopkPro (ArrayList<KhoaLuanDTO> Sequence, int k, int i) //Get top-k pro of ti 
-    {
-        float proTopk = 0;
-        KhoaLuanDTO tuple = new KhoaLuanDTO();
-        tuple = GetTupleByIndex(Sequence, i);
-        int currentIndex = Sequence.indexOf(tuple);
-        float pro = tuple.getPro(); //pro of tuple
-        for(int j = 1; j <= k; j++)
-        {
-            proTopk += GetProkTuple(Sequence, currentIndex - 1, j - 1);
-        }
-        return pro * proTopk;
-    }
+//    public float GetTopkPro (ArrayList<KhoaLuanDTO> Sequence, int k, int i) //Get top-k pro of ti 
+//    {
+//        float proTopk = 0;
+//        KhoaLuanDTO tuple = new KhoaLuanDTO();
+//        tuple = GetTupleByIndex(Sequence, i);
+//        int currentIndex = Sequence.indexOf(tuple);
+//        float pro = tuple.getPro(); //pro of tuple
+//        for(int j = 1; j <= k; j++)
+//        {
+//            proTopk += GetProkTuple(Sequence, currentIndex - 1, j - 1);
+//        }
+//        return pro * proTopk;
+//    }
     
     public float GetProTopkWithGenerationRule(ArrayList<KhoaLuanDTO> Sequence, int k, int i) throws Exception
     {
@@ -73,8 +85,9 @@ public class MainFunction {
         ArrayList<KhoaLuanDTO> sequenceWithGenerationRule = new ArrayList<KhoaLuanDTO>();
         KhoaLuanDTO tuple = new KhoaLuanDTO();
         tuple = Sequence.get(i - 1);
-        int z = 0;
-        for (int t = 0; t < i; t++)
+        int z1 = 0; // ti in Rh
+        int z2 = 0; // ti not in Rh
+        for (int t = 0; t < (i - 1); t++)
         {
             ArrayList<ExclusiveRuleDTO> exclusiveRules = new ArrayList<ExclusiveRuleDTO>();
             ArrayList<InclusiveRuleDTO> inclusiveRules = new ArrayList<InclusiveRuleDTO>();
@@ -107,8 +120,9 @@ public class MainFunction {
                                 float sumPro = Sequence.get(t).getPro() 
                                                 + Sequence.get(exclusiveRules.get(e).getExclusiveTuple() - 1).getPro();
                                 KhoaLuanDTO newTuple = new KhoaLuanDTO();
-                                newTuple.setIndex(Integer.valueOf(String.valueOf(Sequence.get(t).getIndex()) 
+                                newTuple.setIndexOfTuple(Integer.valueOf(String.valueOf(Sequence.get(t).getIndex()) 
                                                                     + String.valueOf(exclusiveRules.get(e).getExclusiveTuple())));
+                                newTuple.setIndex(sequenceWithGenerationRule.size());
                                 newTuple.setPro(sumPro);
                                 sequenceWithGenerationRule.add(newTuple);
                                 Sequence.get(exclusiveRules.get(e).getExclusiveTuple() - 1).setStatus(-1);
@@ -132,7 +146,7 @@ public class MainFunction {
                         {
                             if (i != inclusiveRules.get(index).getInclusiveTuple() && i != t + 1)  //ti not in R*h'
                             {
-                                z++;
+                                z2 = z2 + 2;
                                 KhoaLuanDTO newTuple = new KhoaLuanDTO();
                                 newTuple.setIndex(Integer.valueOf(String.valueOf(Sequence.get(t).getIndex()) 
                                                                     + String.valueOf(inclusiveRules.get(index).getInclusiveTuple())));
@@ -145,7 +159,7 @@ public class MainFunction {
                             {
                                 if (t + 1 < i)
                                 {
-                                    z++;
+                                    z1++;
                                     Sequence.get(inclusiveRules.get(index).getInclusiveTuple() - 1).setStatus(-1);
                                 }
                             }
@@ -157,23 +171,26 @@ public class MainFunction {
                     }
                 }
             }
-        }        
-        if (z != 0)
+        }      
+        if (z2 > 0)
         {
-            int currentIndex = sequenceWithGenerationRule.size() - 1;
-            for(int j = 1; j <= k - z; j++)
+            if (k > sequenceWithGenerationRule.size())
             {
-                proTopk += GetProkTuple(sequenceWithGenerationRule, currentIndex - 1, j - 1);
+                k = sequenceWithGenerationRule.size();
+            }
+            for(int j = 1; j <= k; j++)
+            {
+                proTopk += GetProkTuple(sequenceWithGenerationRule, sequenceWithGenerationRule.size() - 1, j - 1, z2);
             }
         }
         else
         {
-            int currentIndex = sequenceWithGenerationRule.indexOf(tuple);
-            for(int j = 1; j <= k; j++)
+            for(int j = 1; j <= k - z1; j++)
             {
-                proTopk += GetProkTuple(sequenceWithGenerationRule, currentIndex - 1, j - 1);
+                proTopk += GetProkTuple(sequenceWithGenerationRule, sequenceWithGenerationRule.size() - 1, j - 1, 0);
             }
         }
+        
         return tuple.getPro() * proTopk;
     }
     

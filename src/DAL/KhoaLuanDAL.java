@@ -19,7 +19,6 @@ import java.util.logging.Logger;
  * @author DLT
  */
 public class KhoaLuanDAL {
-    //MyConnectUnit connect = new MyConnectUnit("C:/Users/DLT/Documents/NetBeansProjects/KhoaLuan/src/Database/database_khoaluan.db");
     MyConnectUnit connect = new MyConnectUnit("KhoaLuan");
     public ArrayList<KhoaLuanDTO> getData(ResultSet rs) throws SQLException, Exception
     {

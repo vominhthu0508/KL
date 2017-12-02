@@ -78,14 +78,13 @@ public class MainController extends AnchorPane implements Initializable {
     
     public void btnClick (ActionEvent event) {
         ArrayList<KhoaLuanDTO> topkTuples = new ArrayList<KhoaLuanDTO>();
-        ArrayList<KhoaLuanDTO> PTkTuples = new ArrayList<KhoaLuanDTO>();
+        //ArrayList<KhoaLuanDTO> PTkTuples = new ArrayList<KhoaLuanDTO>();
         try {
             topkTuples = func.GetSequenceTopkBestPro(dataList, Integer.valueOf(textBox.getText()));
             //PTkTuples = GetSequencePTk(dataList, Integer.valueOf(jTextField1.getText()), 0.031f);
         } catch (Exception ex) {
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
         indexOfTupleCol2.setCellValueFactory(new PropertyValueFactory<KhoaLuanDTO, Integer>("indexOfTuple"));
         productIdCol2.setCellValueFactory(new PropertyValueFactory<KhoaLuanDTO, String>("productId"));
         scoreCol2.setCellValueFactory(new PropertyValueFactory<KhoaLuanDTO, Integer>("score"));
